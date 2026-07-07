@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Baseball Mechanics — Web Portal
 
-## Getting Started
+Companion web app for [baseball-mechanics-app](../baseball-mechanics-app), giving recruiters and coaches browser access on a laptop. Built as a separate Next.js codebase hitting the same [baseball-mechanics-server](../baseball-mechanics-server) backend and Supabase project — see `C:\Users\jordanstotts\.claude\plans\cuddly-wiggling-wind.md` for the full phased plan this was built from.
 
-First, run the development server:
+## Phase 1 (this repo, current state)
+
+Recruiter Portal only — the one domain that was already fully server/Postgres-backed on mobile, so it ported with no new backend work beyond a CORS fix. Sign in/up, Dashboard, Profile, Player Search, Discover, AI Recruit, Notifications, Favorites, Organization Portal.
+
+**Not included yet** (see the plan doc for why): Team Dashboard, Player Roster, Session Results, Practice Plans — that data currently lives only on each coach's phone (written to Postgres but never read back by anything). Needs new server read endpoints + live-schema verification first (Phase 2).
+
+Also explicitly dropped for v1: photos (no cloud storage anywhere in the mobile app either), native PDF export, IAP/premium gating, Recruiting Board / Prospect Rankings (local-only on mobile too, pre-existing gap).
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in from baseball-mechanics-app/.env's EXPO_PUBLIC_* values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Auth
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+One shared Supabase client (`src/lib/supabase/`) against the same project the mobile app uses. Mobile runs two separate client instances (player vs. recruiter) purely to avoid two local sessions clobbering each other on the same device — irrelevant on web, where each browser session is already isolated.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`src/proxy.ts` (Next.js 16's replacement for `middleware.ts`) gates every route except `/login` and `/search` (the latter is genuinely public per `server.js`'s `/search` endpoint — no auth required there either).
 
-## Learn More
+## Deploying
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Needs `WEB_APP_ORIGINS` set on the server (baseball-mechanics-server's Render env) to include this app's deployed origin(s), or every request will fail CORS — see `server.js`'s `cors()` config.
