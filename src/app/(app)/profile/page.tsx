@@ -113,7 +113,7 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <Label>Division</Label>
-            <Select value={form.division || undefined} onValueChange={(v) => set("division", v ?? "")}>
+            <Select value={form.division} onValueChange={(v) => set("division", v ?? "")}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select division" />
               </SelectTrigger>
