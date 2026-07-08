@@ -19,8 +19,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Base UI's <Button> renders a native `type="button"` and ignores a passed
+  // `type="submit"`, so neither a click nor Enter triggers native form submit.
+  // Drive submission explicitly from the button's onClick (and the form's
+  // onSubmit, for Enter) — accept any synthetic event so both call sites fit.
+  async function handleSubmit(e?: React.SyntheticEvent) {
+    e?.preventDefault();
+    if (loading) return;
     setError("");
     setSuccess("");
 
@@ -40,12 +45,16 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (tab === "signup") {
-        const { user } = await recruiterSignUp(email.trim(), password);
-        if (!user) {
+        // Supabase returns a `user` even when confirmation is pending; only a
+        // `session` means we're actually signed in. Branch on session.
+        const { user, session } = await recruiterSignUp(email.trim(), password);
+        if (session) {
+          router.replace("/dashboard");
+        } else if (user) {
           setSuccess("Account created! Check your email to confirm your address, then sign in.");
           setTab("signin");
         } else {
-          router.replace("/dashboard");
+          setError("Could not create account. Please try again.");
         }
       } else {
         await recruiterSignIn(email.trim(), password);
@@ -127,7 +136,7 @@ export default function LoginPage() {
               {error && <p className="text-sm text-destructive">{error}</p>}
               {success && <p className="text-sm text-green-600 dark:text-green-500">{success}</p>}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading} onClick={handleSubmit}>
                 {loading ? "Please wait…" : tab === "signup" ? "Create Account" : "Sign In"}
               </Button>
             </form>
