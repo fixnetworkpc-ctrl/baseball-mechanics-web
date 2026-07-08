@@ -167,3 +167,88 @@ export interface OrgAnalytics {
   recruitingExposure: number | null;
   members: { userId: string; role: string; playerName: string | null }[];
 }
+
+// ── Phase 2: personal team/roster/results/practice data ──────────────────────
+// Response shapes from baseball-mechanics-server's web-portal read endpoints
+// (/my-players, /my-sessions, /my-practice-plans, /my-team). All require a real
+// (non-anon) auth token and are scoped server-side to the caller's own user_id.
+
+// GET /my-players → { players }
+export interface MyPlayer {
+  playerName: string | null;
+  playerId: string | null;
+  sessionCount: number;
+  modes: string[];
+  latest: {
+    date: string | null;
+    mode: string | null;
+    grade: string | null;
+    mechanicsScore: unknown; // versioned object; interpret client-side
+  };
+}
+
+// GET /my-sessions → { sessions, nextCursor }
+export interface MySession {
+  id: string;
+  playerId: string | null;
+  playerName: string | null;
+  date: string | null;
+  mode: string | null;
+  grade: string | null;
+  summary: string | null;
+  opportunitiesCount: number | null;
+  strengthsCount: number | null;
+  analysis: unknown;
+  frameLabels: string[];
+  mechanicsScore: unknown;
+  coachNote: string | null;
+  drillAssignments: unknown[];
+  normalizedSignals: unknown;
+}
+export interface MySessionsResponse {
+  sessions: MySession[];
+  nextCursor: string | null;
+}
+
+// GET /my-practice-plans → { plans }
+export interface MyPracticePlan {
+  id: string;
+  savedAt: string | null;
+  mode: string | null;
+  totalMinutes: number | null;
+  totalPlayers: number | null;
+  ageDivision: string | null;
+  focusThemes: string[];
+  planConfidence: number | null;
+  plan: Record<string, unknown> | null;
+}
+
+// GET /my-team → { team, membership }
+export interface LeaderboardEntry {
+  rank: number;
+  firstName: string;
+  score: number;
+}
+export interface TeamPayload {
+  teamId: string;
+  teamName: string | null;
+  ageDivision: string | null;
+  joinCode: string | null;
+  createdAt: string | null;
+  totalPlayers: number;
+  avgPMI: number | null;
+  avgHMI: number | null;
+  avgCMI: number | null;
+  pmiLeaderboard: LeaderboardEntry[];
+  hmiLeaderboard: LeaderboardEntry[];
+  cmiLeaderboard: LeaderboardEntry[];
+}
+export interface TeamMembership {
+  teamId: string;
+  teamName: string | null;
+  ageDivision: string | null;
+}
+export interface MyTeamResponse {
+  team: TeamPayload | null;
+  membership: TeamMembership | null;
+}

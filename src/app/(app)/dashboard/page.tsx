@@ -80,8 +80,12 @@ export default function DashboardPage() {
         {[
           { href: "/search", label: "Search" },
           { href: "/favorites", label: "Favorites" },
+          { href: "/alerts", label: "Alerts" },
           { href: "/notifications", label: "Notifications" },
           { href: "/ai-recruit", label: "AI Recruit" },
+          { href: "/roster", label: "My Roster" },
+          { href: "/team", label: "Team" },
+          { href: "/practice-plans", label: "Practice Plans" },
           { href: "/org", label: "Organization" },
           { href: "/profile", label: "Profile" },
         ].map((tile) => (

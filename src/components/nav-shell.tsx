@@ -12,7 +12,11 @@ const NAV_ITEMS = [
   { href: "/discover", label: "Discover" },
   { href: "/ai-recruit", label: "AI Recruit" },
   { href: "/favorites", label: "Favorites" },
+  { href: "/alerts", label: "Alerts" },
   { href: "/notifications", label: "Notifications" },
+  { href: "/roster", label: "My Roster" },
+  { href: "/team", label: "Team" },
+  { href: "/practice-plans", label: "Practice Plans" },
   { href: "/org", label: "Organization" },
   { href: "/profile", label: "Profile" },
 ];
