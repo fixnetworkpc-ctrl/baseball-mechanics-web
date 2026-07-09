@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:contrast": "node scripts/check-contrast.js"
+    "check:contrast": "node scripts/check-contrast.js",
+    "check:a11y": "node scripts/check-a11y.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
