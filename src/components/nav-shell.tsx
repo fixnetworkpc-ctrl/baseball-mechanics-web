@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { recruiterSignOut } from "@/lib/recruiter-service";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -64,7 +65,10 @@ export function NavShell({
         </nav>
 
         <div className="mt-auto space-y-2">
-          {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
+          <div className="flex items-center justify-between gap-2">
+            {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
+            <ThemeToggle />
+          </div>
           {email ? (
             <Button variant="outline" size="sm" className="w-full" onClick={handleSignOut}>
               Sign out
@@ -80,15 +84,18 @@ export function NavShell({
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between border-b p-3">
           <p className="text-sm font-bold">Recruiter Portal</p>
-          {email ? (
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              Sign out
-            </Button>
-          ) : (
-            <Link href="/login" className={buttonVariants({ size: "sm" })}>
-              Sign in
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {email ? (
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                Sign out
+              </Button>
+            ) : (
+              <Link href="/login" className={buttonVariants({ size: "sm" })}>
+                Sign in
+              </Link>
+            )}
+          </div>
         </header>
         <nav className="md:hidden flex gap-1 overflow-x-auto border-b p-2">
           {NAV_ITEMS.map((item) => (
