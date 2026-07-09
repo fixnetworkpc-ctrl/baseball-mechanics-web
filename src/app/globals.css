@@ -106,11 +106,11 @@
   --glow-blue: rgba(43, 128, 255, 0.22);
   --glow-green: rgba(46, 204, 113, 0.22);
 
-  /* categorical chart palette */
+  /* categorical chart palette (validated: lightness band, CVD, 3:1 contrast on white) */
   --chart-1: #1e6be6;
   --chart-2: #c21026;
-  --chart-3: #1fa95c;
-  --chart-4: #e67e22;
+  --chart-3: #178a4c;
+  --chart-4: #c2670f;
   --chart-5: #8e44ad;
 
   --sidebar: #ffffff;
@@ -164,11 +164,11 @@
   --glow-blue: rgba(43, 128, 255, 0.45);
   --glow-green: rgba(46, 204, 113, 0.4);
 
-  /* categorical chart palette (brightened for dark plots) */
+  /* categorical chart palette (validated: lightness band, CVD, 3:1 contrast on navy) */
   --chart-1: #2b80ff;
   --chart-2: #e84050;
-  --chart-3: #2ecc71;
-  --chart-4: #e67e22;
+  --chart-3: #199150;
+  --chart-4: #d9761c;
   --chart-5: #b06bd6;
 
   --sidebar: #0a1829;
