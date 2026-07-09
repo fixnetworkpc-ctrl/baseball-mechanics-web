@@ -25,7 +25,12 @@ export function StarRating({
           style={{ fontSize: size }}
           aria-label={`${n} star${n !== 1 ? "s" : ""}`}
         >
-          <span className={n <= value ? "text-yellow-500" : "text-muted-foreground/30"}>★</span>
+          <span
+            className={n <= value ? undefined : "text-muted-foreground/30"}
+            style={n <= value ? { color: "var(--tier-elite)" } : undefined}
+          >
+            ★
+          </span>
         </button>
       ))}
     </div>

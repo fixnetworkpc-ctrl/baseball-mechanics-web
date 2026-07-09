@@ -87,10 +87,16 @@ export default function NotificationsPage() {
                   </div>
                   {n.body && <p className="text-sm mt-1">{n.body}</p>}
                   {n.player_name && (
-                    <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">{n.player_name}</p>
+                    <p className="mt-1 text-xs font-bold text-accent-blue">{n.player_name}</p>
                   )}
                 </div>
-                {!n.read && <span className="mt-1 size-2 rounded-full bg-blue-500 shrink-0" />}
+                {!n.read && (
+                  <span
+                    role="img"
+                    aria-label="Unread"
+                    className="mt-1 size-2 shrink-0 rounded-full bg-accent-blue"
+                  />
+                )}
               </CardContent>
             </Card>
           ))}

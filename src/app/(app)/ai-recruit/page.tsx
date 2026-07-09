@@ -96,17 +96,18 @@ export default function AiRecruitPage() {
         <div className="py-10 text-center text-sm text-muted-foreground">Analyzing player pool…</div>
       )}
 
+      {/* Tints stay at /5: token text over a /10 tint drops below 4.5:1. */}
       {error && (
-        <Card className="border-amber-500/40 bg-amber-500/10">
-          <CardContent className="py-4 text-sm text-amber-600 dark:text-amber-400">{error}</CardContent>
+        <Card className="border-warning/40 bg-warning/5">
+          <CardContent className="py-4 text-sm text-warning">{error}</CardContent>
         </Card>
       )}
 
       {result && (
         <>
-          <Card className="border-blue-500/30 bg-blue-500/10">
+          <Card className="border-accent-blue/30 bg-accent-blue/5">
             <CardContent className="py-4">
-              <p className="text-xs font-bold tracking-widest text-blue-600 dark:text-blue-400 uppercase">
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">
                 {result.intent?.replace(/_/g, " ") || "Results"}
               </p>
               <p className="text-sm mt-1">{result.explanation}</p>

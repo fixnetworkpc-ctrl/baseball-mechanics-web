@@ -50,6 +50,16 @@ const ratio = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
+// Composite `fg` over `bg` at alpha `a` — models Tailwind's `bg-token/NN` tints.
+const blend = (fg, bg, a) => {
+  const [r1, g1, b1] = hex2rgb(fg);
+  const [r2, g2, b2] = hex2rgb(bg);
+  const mix = (x, y) => Math.round(a * x + (1 - a) * y);
+  return "#" + [mix(r1, r2), mix(g1, g2), mix(b1, b2)]
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("");
+};
+
 const TEXT_TOKENS = [
   "--success", "--warning", "--destructive", "--accent-blue",
   "--grade-a", "--grade-b", "--grade-c", "--grade-d", "--grade-f",
@@ -91,6 +101,15 @@ for (const [theme, V] of [["light", vars(grab(":root"))], ["dark", vars(grab(".d
   check(theme, "primary-foreground on primary fill", V["--primary-foreground"], V["--primary"], 4.5);
   check(theme, "focus ring on bg", V["--ring"], bg, 3);
   check(theme, "focus ring on card", V["--ring"], card, 3);
+
+  // Tinted callout cards: `text-X` sitting on `bg-X/NN` over a card. The tint
+  // pulls the surface toward the text color, so a token that passes on a plain
+  // card can still fail here. accent-blue fails at /10 in both themes — the
+  // ai-recruit intent + error cards are pinned to /5 for this reason.
+  const TINT = 0.05;
+  for (const t of ["--warning", "--accent-blue"]) {
+    check(theme, `${t} text on ${t}/5 tinted card`, V[t], blend(V[t], card, TINT), 4.5);
+  }
 }
 
 if (failures > 0) {
