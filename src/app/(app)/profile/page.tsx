@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getRecruiterProfile, saveRecruiterProfile } from "@/lib/recruiter-service";
 import { createClient } from "@/lib/supabase/client";
+import { PageHeader } from "@/components/layout/page-header";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -73,18 +74,15 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="max-w-lg space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={2} className="max-w-lg" />;
 
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Recruiter Profile</h1>
+      <PageHeader
+        eyebrow="Account"
+        title="Recruiter Profile"
+        subtitle="Shown to players when you follow or save them"
+      />
 
       <Card>
         <CardHeader>

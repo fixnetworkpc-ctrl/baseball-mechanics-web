@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
 import { getNotifications, markNotificationsRead } from "@/lib/recruiter-service";
 import type { AppNotification } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 function timeAgo(dateStr: string) {
@@ -49,32 +52,27 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
-          {unreadCount > 0 && <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{unreadCount} unread</p>}
-        </div>
-        {unreadCount > 0 && (
-          <Button variant="outline" size="sm" className="ml-auto" onClick={markAllRead}>
-            Mark all read
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        eyebrow="Activity"
+        title="Notifications"
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : "You're all caught up"}
+        actions={
+          unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={markAllRead}>
+              Mark all read
+            </Button>
+          )
+        }
+      />
 
       {loading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </div>
+        <LoadingState rows={2} withTitle={false} />
       ) : notifications.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No notifications yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              You&apos;ll be notified when a player you follow improves their score, or when a recruiter saves a player you&apos;re tracking.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Bell}
+          title="No notifications yet"
+          body="You'll be notified when a player you follow improves their score, or when a recruiter saves a player you're tracking."
+        />
       ) : (
         <div className="space-y-2">
           {notifications.map((n) => (

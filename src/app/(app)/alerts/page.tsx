@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BellRing } from "lucide-react";
 import { toast } from "sonner";
 import {
   getAlerts,
@@ -10,11 +11,12 @@ import {
   checkAlerts,
 } from "@/lib/recruiter-service";
 import type { RecruiterAlert } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -130,44 +132,33 @@ export default function AlertsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={3} />;
 
   const selMeta = selType ? TYPE_META[selType] : null;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Alerts</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Get notified when athletes cross your thresholds
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" disabled={checking} onClick={handleCheck}>
-            {checking ? "Checking…" : "Check Now"}
-          </Button>
-          <Button size="sm" onClick={() => setAddOpen(true)}>New Alert</Button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Activity"
+        title="Alerts"
+        subtitle="Get notified when athletes cross your thresholds"
+        actions={
+          <>
+            <Button variant="outline" size="sm" disabled={checking} onClick={handleCheck}>
+              {checking ? "Checking…" : "Check Now"}
+            </Button>
+            <Button size="sm" onClick={() => setAddOpen(true)}>New Alert</Button>
+          </>
+        }
+      />
 
       {alerts.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No alerts yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Add conditions and get notified when athletes hit your thresholds. Tap “Check Now” any time.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BellRing}
+          title="No alerts yet"
+          body="Add conditions and get notified when athletes hit your thresholds. Use “Check Now” any time."
+          action={<Button size="sm" onClick={() => setAddOpen(true)}>New Alert</Button>}
+        />
       ) : (
         <div className="space-y-3">
           {alerts.map((a) => {

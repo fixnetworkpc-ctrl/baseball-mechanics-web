@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Telescope } from "lucide-react";
 import { toast } from "sonner";
 import { getDiscoverCategories, addFavorite, getFavorites } from "@/lib/recruiter-service";
 import type { DiscoverCategory, PlayerCard } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const TIER_COLORS: Record<string, string> = {
   elite: "text-amber-500 border-amber-500/40",
@@ -67,36 +70,26 @@ export default function DiscoverPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-48 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={2} />;
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Discover Athletes</h1>
-        {updatedAt && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Updated {updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </p>
-        )}
-      </div>
+      <PageHeader
+        eyebrow="Scouting"
+        title="Discover Athletes"
+        subtitle={
+          updatedAt
+            ? `Ranked feeds · updated ${updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+            : "Ranked feeds across the athlete pool"
+        }
+      />
 
       {categories.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No athletes yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              As players set their profiles to Recruiter or Public visibility, they&apos;ll appear here in ranked feeds.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Telescope}
+          title="No athletes yet"
+          body="As players set their profiles to Recruiter or Public visibility, they'll appear here in ranked feeds."
+        />
       ) : (
         categories.map((cat) => (
           <section key={cat.id} className="space-y-3">

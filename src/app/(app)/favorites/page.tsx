@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { getFavorites, updateFavorite, removeFavorite } from "@/lib/recruiter-service";
 import type { RecruiterFavorite } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -69,33 +72,22 @@ export default function FavoritesPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={2} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Favorites</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {favorites.length} {favorites.length === 1 ? "player" : "players"}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Recruiting"
+        title="Favorites"
+        subtitle={`${favorites.length} ${favorites.length === 1 ? "player" : "players"} on your watchlist`}
+      />
 
       {favorites.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No favorites yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Find players via Search and add them to your watchlist. Their public profiles will appear here.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Star}
+          title="No favorites yet"
+          body="Find players via Search and add them to your watchlist. Their public profiles will appear here."
+        />
       ) : (
         <div className="space-y-3">
           {favorites.map((fav) => (

@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { createOrg, joinOrg, getMyOrgs, getOrgAnalytics } from "@/lib/org-service";
 import type { Org, OrgAnalytics } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -95,21 +98,15 @@ export default function OrgPortalPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={2} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Organization Portal</h1>
-        <p className="text-sm text-muted-foreground mt-1">Travel ball, academy, and program management</p>
-      </div>
+      <PageHeader
+        eyebrow="Programs"
+        title="Organization Portal"
+        subtitle="Travel ball, academy, and program management"
+      />
 
       <div className="flex gap-3">
         <Button className="flex-1" onClick={() => setCreateOpen(true)}>+ Create Org</Button>
@@ -117,14 +114,11 @@ export default function OrgPortalPage() {
       </div>
 
       {orgs.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No organizations yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Create a travel ball organization or academy, then invite coaches, parents, and players using your org&apos;s invite code.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Building2}
+          title="No organizations yet"
+          body="Create a travel ball organization or academy, then invite coaches, parents, and players using your org's invite code."
+        />
       ) : (
         <div className="space-y-3">
           {orgs.map((org) => (

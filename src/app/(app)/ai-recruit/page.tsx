@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { SearchX } from "lucide-react";
 import { aiRecruit, addFavorite, followPlayer } from "@/lib/recruiter-service";
 import type { AiRecruitResponse, AiRecruitResult } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -58,10 +61,11 @@ export default function AiRecruitPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">AI Recruit Assistant</h1>
-        <p className="text-sm text-muted-foreground mt-1">Ask anything about the player pool</p>
-      </div>
+      <PageHeader
+        eyebrow="Scouting"
+        title="AI Recruit Assistant"
+        subtitle="Ask anything about the player pool"
+      />
 
       <div className="flex gap-2">
         <Input
@@ -110,7 +114,11 @@ export default function AiRecruitPage() {
           </Card>
 
           {result.players.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No players matched this search.</p>
+            <EmptyState
+              icon={SearchX}
+              title="No players matched this search"
+              body="Try rephrasing your question, or start from one of the suggested searches."
+            />
           ) : (
             <div className="space-y-3">
               {result.players.map((p) => (

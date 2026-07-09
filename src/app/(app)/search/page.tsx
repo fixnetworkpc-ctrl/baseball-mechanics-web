@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SearchX } from "lucide-react";
 import { toast } from "sonner";
 import {
   searchPlayers,
@@ -9,6 +10,8 @@ import {
   saveSearch,
 } from "@/lib/recruiter-service";
 import type { SearchResult, SearchFilters } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { FilterChips } from "@/components/filter-chips";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -121,7 +124,11 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Player Search</h1>
+      <PageHeader
+        eyebrow="Recruiting"
+        title="Player Search"
+        subtitle="Filter the athlete pool by position, class, mode, and location"
+      />
 
       <Card>
         <CardContent className="space-y-4 pt-6">
@@ -181,22 +188,28 @@ export default function SearchPage() {
       </Card>
 
       {searched && !loading && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {results.length === 0
-              ? "No players found. Try broadening your filters."
-              : `${results.length} player${results.length !== 1 ? "s" : ""} found`}
-          </p>
-          {results.map((player) => (
-            <PlayerResultCard
-              key={player.playerId}
-              player={player}
-              isFav={favoriteIds.has(player.playerId)}
-              saving={!!saving[player.playerId]}
-              onAddFav={() => handleAddFavorite(player)}
-            />
-          ))}
-        </div>
+        results.length === 0 ? (
+          <EmptyState
+            icon={SearchX}
+            title="No players found"
+            body="Try broadening your filters — clear the state field, widen the grad-year range, or drop the position."
+          />
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {results.length} player{results.length !== 1 ? "s" : ""} found
+            </p>
+            {results.map((player) => (
+              <PlayerResultCard
+                key={player.playerId}
+                player={player}
+                isFav={favoriteIds.has(player.playerId)}
+                saving={!!saving[player.playerId]}
+                onAddFav={() => handleAddFavorite(player)}
+              />
+            ))}
+          </div>
+        )
       )}
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
