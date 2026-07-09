@@ -53,6 +53,8 @@ const ratio = (a, b) => {
 const TEXT_TOKENS = [
   "--success", "--warning", "--destructive", "--accent-blue",
   "--grade-a", "--grade-b", "--grade-c", "--grade-d", "--grade-f",
+  // Tier tint: rendered as badge text + border on cards (Discover, TierBadge).
+  "--tier-elite",
 ];
 
 let failures = 0;

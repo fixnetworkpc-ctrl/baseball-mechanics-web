@@ -107,6 +107,10 @@
   --grade-d: #a7580f;
   --grade-f: #d3182b;
 
+  /* Upside tiers. Mirrors the mobile app's tierColors (theme.js): elite=gold,
+     high=blue, moderate=green, limited/developing=muted. */
+  --tier-elite: #8d6608;
+
   --glow-red: rgba(194, 16, 38, 0.25);
   --glow-blue: rgba(43, 128, 255, 0.22);
   --glow-green: rgba(46, 204, 113, 0.22);
@@ -165,6 +169,8 @@
   --grade-c: #f1c40f;
   --grade-d: #e67e22;
   --grade-f: #e74c3c;
+
+  --tier-elite: #f1c40f;
 
   --glow-red: rgba(194, 16, 38, 0.45);
   --glow-blue: rgba(43, 128, 255, 0.45);

@@ -1,20 +1,13 @@
 import { Badge } from "@/components/ui/badge";
+import { tierColor } from "@/lib/design/tokens";
 import { cn } from "@/lib/utils";
 
 // Semantic badges ported from the mobile app's color maps (theme.js).
 // Use these instead of hand-coloring a <Badge> per call site.
 
-const TIER_COLOR: Record<string, string> = {
-  elite: "var(--brand-accent)",
-  high: "var(--accent-blue)",
-  moderate: "var(--success)",
-  developing: "var(--muted-foreground)",
-  limited: "var(--muted-foreground)",
-};
-
 export function TierBadge({ tier, className }: { tier?: string | null; className?: string }) {
   if (!tier) return null;
-  const color = TIER_COLOR[tier.toLowerCase()] ?? "var(--muted-foreground)";
+  const color = tierColor(tier);
   return (
     <Badge
       variant="outline"

@@ -8,16 +8,10 @@ import type { DiscoverCategory, PlayerCard } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { LoadingState } from "@/components/feedback/loading-state";
+import { tierColor } from "@/lib/design/tokens";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const TIER_COLORS: Record<string, string> = {
-  elite: "text-amber-500 border-amber-500/40",
-  high: "text-blue-500 border-blue-500/40",
-  moderate: "text-emerald-500 border-emerald-500/40",
-  developing: "text-muted-foreground border-border",
-};
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
@@ -143,7 +137,10 @@ function AthleteCard({
     player.cmiVelocity ?? -Infinity
   );
   const hasVel = isFinite(vel);
-  const tierClass = TIER_COLORS[player.upsideTier] ?? TIER_COLORS.developing;
+  const tint = tierColor(player.upsideTier);
+  // Rising (>=3 pts/session) reads as success, moderate gains as informational.
+  const velColor =
+    vel >= 3 ? "var(--success)" : vel >= 1 ? "var(--accent-blue)" : "var(--muted-foreground)";
   const meta = [player.position, player.gradYear && `'${player.gradYear.slice(-2)}`, player.state]
     .filter(Boolean)
     .join(" · ");
@@ -156,7 +153,7 @@ function AthleteCard({
         </span>
 
         {primaryScore != null && (
-          <Badge variant="outline" className={tierClass}>
+          <Badge variant="outline" style={{ color: tint, borderColor: tint }}>
             {primaryLabel} {primaryScore}
           </Badge>
         )}
@@ -167,7 +164,7 @@ function AthleteCard({
         </div>
 
         {hasVel && (
-          <p className={`text-xs font-bold ${vel >= 3 ? "text-emerald-500" : vel >= 1 ? "text-blue-500" : "text-muted-foreground"}`}>
+          <p className="text-xs font-bold" style={{ color: velColor }}>
             {vel > 0 ? "+" : ""}{vel.toFixed(1)} pts/session
           </p>
         )}

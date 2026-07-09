@@ -28,6 +28,21 @@ export const misColor = {
   CMI: "var(--chart-3)",
 } as const;
 
+// Upside-tier colors. Single source for both TierBadge and the Discover feed —
+// mirrors the mobile app's `tierColors` in theme.js.
+const TIER_COLOR: Record<string, string> = {
+  elite: "var(--tier-elite)",
+  high: "var(--accent-blue)",
+  moderate: "var(--success)",
+  developing: "var(--muted-foreground)",
+  limited: "var(--muted-foreground)",
+};
+
+export function tierColor(tier?: string | null): string {
+  if (!tier) return "var(--muted-foreground)";
+  return TIER_COLOR[tier.toLowerCase()] ?? "var(--muted-foreground)";
+}
+
 export const gradeColor: Record<string, string> = {
   A: "var(--grade-a)",
   B: "var(--grade-b)",
