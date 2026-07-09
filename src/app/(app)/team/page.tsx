@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Users } from "lucide-react";
 import { getMyTeam } from "@/lib/team-service";
 import type { MyTeamResponse, LeaderboardEntry } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatTile } from "@/components/data-display/stat-tile";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { CategoryBar } from "@/components/charts/category-bar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function TeamPage() {
@@ -22,16 +26,7 @@ export default function TeamPage() {
     return () => { active = false; };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-48 w-full" />
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingState rows={3} />;
   if (error) {
     return (
       <Card className="border-destructive/40">
@@ -40,51 +35,39 @@ export default function TeamPage() {
     );
   }
 
-  // No membership at all.
   if (!data?.membership) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight">Team Dashboard</h1>
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">You&apos;re not on a team</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Join or create a team in the mobile app to see your team dashboard here.
-            </p>
-          </CardContent>
-        </Card>
+        <PageHeader eyebrow="My Program" title="Team Dashboard" />
+        <EmptyState
+          icon={Users}
+          title="You're not on a team"
+          body="Join or create a team in the mobile app to see your team dashboard here."
+        />
       </div>
     );
   }
 
   const { team, membership } = data;
+  const subtitle = [membership.ageDivision, team?.joinCode && `Join code ${team.joinCode}`].filter(Boolean).join(" · ");
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{membership.teamName || "Team Dashboard"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {membership.ageDivision && <span>{membership.ageDivision}</span>}
-          {team?.joinCode && <span> · Join code {team.joinCode}</span>}
-        </p>
-      </div>
+      <PageHeader eyebrow="My Program" title={membership.teamName || "Team Dashboard"} subtitle={subtitle || undefined} />
 
       {!team ? (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <p className="font-medium">Team data unavailable</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Your membership is active, but the team&apos;s live data couldn&apos;t be loaded right now.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="Team data unavailable"
+          body="Your membership is active, but the team's live data couldn't be loaded right now."
+        />
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard label="Players" value={team.totalPlayers} />
-            <StatCard label="Avg PMI" value={team.avgPMI} />
-            <StatCard label="Avg HMI" value={team.avgHMI} />
-            <StatCard label="Avg CMI" value={team.avgCMI} />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatTile label="Players" value={team.totalPlayers} accent="var(--muted-foreground)" />
+            <StatTile label="Avg PMI" value={team.avgPMI} accent="var(--chart-1)" />
+            <StatTile label="Avg HMI" value={team.avgHMI} accent="var(--chart-2)" />
+            <StatTile label="Avg CMI" value={team.avgCMI} accent="var(--chart-3)" />
           </div>
 
           <Tabs defaultValue="pmi">
@@ -93,9 +76,9 @@ export default function TeamPage() {
               <TabsTrigger value="hmi">Hitting</TabsTrigger>
               <TabsTrigger value="cmi">Catching</TabsTrigger>
             </TabsList>
-            <TabsContent value="pmi"><Leaderboard entries={team.pmiLeaderboard} label="PMI" /></TabsContent>
-            <TabsContent value="hmi"><Leaderboard entries={team.hmiLeaderboard} label="HMI" /></TabsContent>
-            <TabsContent value="cmi"><Leaderboard entries={team.cmiLeaderboard} label="CMI" /></TabsContent>
+            <TabsContent value="pmi"><Board entries={team.pmiLeaderboard} label="PMI" colorIndex={0} /></TabsContent>
+            <TabsContent value="hmi"><Board entries={team.hmiLeaderboard} label="HMI" colorIndex={1} /></TabsContent>
+            <TabsContent value="cmi"><Board entries={team.cmiLeaderboard} label="CMI" colorIndex={2} /></TabsContent>
           </Tabs>
         </>
       )}
@@ -103,40 +86,22 @@ export default function TeamPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number | null }) {
-  return (
-    <Card>
-      <CardContent className="py-4 text-center">
-        <p className="text-2xl font-bold">{value ?? "—"}</p>
-        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mt-1">{label}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function Leaderboard({ entries, label }: { entries: LeaderboardEntry[]; label: string }) {
+function Board({ entries, label, colorIndex }: { entries: LeaderboardEntry[]; label: string; colorIndex: number }) {
   if (entries.length === 0) {
     return (
-      <Card className="border-dashed mt-3">
+      <Card className="mt-3 border-dashed">
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
           No {label} scores on this team yet.
         </CardContent>
       </Card>
     );
   }
+  const data = entries.map((e) => ({ label: `#${e.rank} ${e.firstName}`, value: e.score }));
   return (
-    <div className="space-y-2 mt-3">
-      {entries.map((e) => (
-        <Card key={`${e.rank}-${e.firstName}`}>
-          <CardContent className="flex items-center justify-between py-3">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-muted-foreground w-6">#{e.rank}</span>
-              <span className="text-sm font-medium">{e.firstName}</span>
-            </div>
-            <Badge variant="outline">{label} {e.score}</Badge>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Card className="mt-3">
+      <CardContent className="pt-6">
+        <CategoryBar data={data} colorIndex={colorIndex} height={Math.max(160, data.length * 34)} />
+      </CardContent>
+    </Card>
   );
 }

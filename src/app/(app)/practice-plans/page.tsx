@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ClipboardList } from "lucide-react";
 import { getMyPracticePlans } from "@/lib/team-service";
 import type { MyPracticePlan } from "@/lib/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PracticePlansPage() {
   const [plans, setPlans] = useState<MyPracticePlan[]>([]);
@@ -21,38 +24,26 @@ export default function PracticePlansPage() {
     return () => { active = false; };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={3} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Practice Plans</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {plans.length} saved {plans.length === 1 ? "plan" : "plans"}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="My Program"
+        title="Practice Plans"
+        subtitle={`${plans.length} saved ${plans.length === 1 ? "plan" : "plans"}`}
+      />
 
       {error ? (
         <Card className="border-destructive/40">
           <CardContent className="py-6 text-sm text-destructive">{error}</CardContent>
         </Card>
       ) : plans.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No saved practice plans</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Practice plans you generate and save in the mobile app appear here.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={ClipboardList}
+          title="No saved practice plans"
+          body="Practice plans you generate and save in the mobile app appear here."
+        />
       ) : (
         <div className="space-y-3">
           {plans.map((p) => (
@@ -66,32 +57,24 @@ export default function PracticePlansPage() {
 
 type Segment = { label?: string; name?: string; title?: string; minutes?: number; duration?: number };
 
-function extractSegments(plan: Record<string, unknown> | null): Segment[] {
-  if (!plan) return [];
-  const raw = (plan as { segments?: unknown }).segments;
-  return Array.isArray(raw) ? (raw as Segment[]) : [];
-}
-
 function PlanCard({ p }: { p: MyPracticePlan }) {
   const saved = p.savedAt ? new Date(p.savedAt).toLocaleDateString() : null;
-  const segments = extractSegments(p.plan);
+  const raw = (p.plan as { segments?: unknown } | null)?.segments;
+  const segments: Segment[] = Array.isArray(raw) ? (raw as Segment[]) : [];
 
   return (
     <Card>
-      <CardContent className="pt-6 space-y-3">
+      <CardContent className="space-y-3 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-semibold capitalize">{p.mode || "Practice"} Plan</p>
             <p className="text-xs text-muted-foreground">
-              {saved && `Saved ${saved}`}
-              {p.ageDivision && ` · ${p.ageDivision}`}
+              {saved && `Saved ${saved}`}{p.ageDivision && ` · ${p.ageDivision}`}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
             {p.totalMinutes != null && <Badge variant="outline">{p.totalMinutes} min</Badge>}
-            {p.planConfidence != null && (
-              <span className="text-xs text-muted-foreground">Confidence {p.planConfidence}</span>
-            )}
+            {p.planConfidence != null && <span className="text-xs text-muted-foreground">Confidence {p.planConfidence}</span>}
           </div>
         </div>
 
@@ -108,7 +91,7 @@ function PlanCard({ p }: { p: MyPracticePlan }) {
               const label = seg.label || seg.name || seg.title || `Segment ${i + 1}`;
               const mins = seg.minutes ?? seg.duration;
               return (
-                <div key={i} className="flex items-center justify-between text-sm border-l-2 pl-3">
+                <div key={i} className="flex items-center justify-between border-l-2 pl-3 text-sm">
                   <span>{label}</span>
                   {mins != null && <span className="text-muted-foreground">{mins} min</span>}
                 </div>

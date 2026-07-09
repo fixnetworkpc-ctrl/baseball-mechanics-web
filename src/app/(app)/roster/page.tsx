@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Users } from "lucide-react";
 import { getMyPlayers, overallScore } from "@/lib/team-service";
 import type { MyPlayer } from "@/lib/types";
-import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/layout/page-header";
+import { PlayerCard } from "@/components/data-display/player-card";
+import { GradeBadge } from "@/components/data-display/badges";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function RosterPage() {
   const [players, setPlayers] = useState<MyPlayer[]>([]);
@@ -22,85 +26,53 @@ export default function RosterPage() {
     return () => { active = false; };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState rows={4} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Roster</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {players.length} {players.length === 1 ? "player" : "players"} across your analyses
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="My Program"
+        title="My Roster"
+        subtitle={`${players.length} ${players.length === 1 ? "player" : "players"} across your analyses`}
+      />
 
       {error ? (
         <Card className="border-destructive/40">
           <CardContent className="py-6 text-sm text-destructive">{error}</CardContent>
         </Card>
       ) : players.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <p className="font-medium">No players yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Analyses you run in the mobile app appear here, grouped by player.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="No players yet"
+          body="Analyses you run in the mobile app appear here, grouped by player."
+        />
       ) : (
-        <div className="space-y-3">
-          {players.map((p, i) => (
-            <PlayerRow key={p.playerId || p.playerName || i} p={p} />
-          ))}
+        <div className="space-y-2">
+          {players.map((p, i) => {
+            const score = overallScore(p.latest.mechanicsScore);
+            const latest = p.latest.date ? new Date(p.latest.date).toLocaleDateString() : null;
+            const meta = [
+              `${p.sessionCount} ${p.sessionCount === 1 ? "session" : "sessions"}`,
+              latest && `latest ${latest}`,
+              p.modes.join(", "),
+            ].filter(Boolean).join(" · ");
+            return (
+              <PlayerCard
+                key={p.playerId || p.playerName || i}
+                name={p.playerName}
+                meta={meta}
+                href={p.playerId ? `/sessions?playerId=${encodeURIComponent(p.playerId)}&name=${encodeURIComponent(p.playerName || "")}` : undefined}
+                right={
+                  <>
+                    {score != null && <Badge variant="secondary">MIS {score}</Badge>}
+                    <GradeBadge grade={p.latest.grade} />
+                  </>
+                }
+              />
+            );
+          })}
         </div>
       )}
     </div>
   );
-}
-
-function PlayerRow({ p }: { p: MyPlayer }) {
-  const score = overallScore(p.latest.mechanicsScore);
-  const latestDate = p.latest.date ? new Date(p.latest.date).toLocaleDateString() : null;
-
-  const inner = (
-    <CardContent className="flex items-center justify-between gap-3 py-4">
-      <div className="min-w-0">
-        <p className="font-semibold truncate">{p.playerName || "Unknown player"}</p>
-        <p className="text-xs text-muted-foreground">
-          {p.sessionCount} {p.sessionCount === 1 ? "session" : "sessions"}
-          {latestDate && ` · latest ${latestDate}`}
-        </p>
-        {p.modes.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {p.modes.map((m) => (
-              <Badge key={m} variant="secondary" className="capitalize">{m}</Badge>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        {p.latest.grade && <Badge variant="outline">Grade {p.latest.grade}</Badge>}
-        {score != null && <span className="text-xs text-muted-foreground">MIS {score}</span>}
-        {p.playerId && <span className="text-xs text-primary">View sessions →</span>}
-      </div>
-    </CardContent>
-  );
-
-  if (p.playerId) {
-    return (
-      <Card className="hover:bg-accent transition-colors">
-        <Link href={`/sessions?playerId=${encodeURIComponent(p.playerId)}&name=${encodeURIComponent(p.playerName || "")}`}>
-          {inner}
-        </Link>
-      </Card>
-    );
-  }
-  return <Card>{inner}</Card>;
 }
