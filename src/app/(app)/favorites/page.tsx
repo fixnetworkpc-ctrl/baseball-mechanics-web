@@ -108,8 +108,10 @@ export default function FavoritesPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Rating</p>
-              <StarRating value={draftRating} onChange={setDraftRating} size={22} />
+              <p id="rating-label" className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                Rating
+              </p>
+              <StarRating value={draftRating} onChange={setDraftRating} size={22} labelledBy="rating-label" />
             </div>
             <div className="space-y-2">
               <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Notes</p>

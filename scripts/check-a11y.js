@@ -119,5 +119,24 @@ t('unrated: the first star is the focusable one', () => {
   assert.ok(it0.split('<button').slice(1)[0].includes('tabindex="0"'));
 });
 
+console.log('\nStarRating — accessible name');
+t('defaults to aria-label when no labelledBy', () => {
+  assert.ok(it3.includes('aria-label="Rating"'), it3);
+  assert.ok(!it3.includes('aria-labelledby'), 'must not emit an empty aria-labelledby');
+});
+t('labelledBy points the radiogroup at the visible label', () => {
+  const named = html({ value: 3, onChange: () => {}, labelledBy: 'rating-label' });
+  assert.ok(named.includes('aria-labelledby="rating-label"'), named);
+});
+t('labelledBy suppresses the duplicate aria-label', () => {
+  const named = html({ value: 3, onChange: () => {}, labelledBy: 'rating-label' });
+  assert.ok(!/aria-label="Rating"/.test(named), 'aria-label must not co-exist with aria-labelledby');
+});
+t('read-only still names itself with the value, ignoring labelledBy', () => {
+  const roNamed = html({ value: 4, readOnly: true, labelledBy: 'rating-label' });
+  assert.ok(roNamed.includes('aria-label="Rating: 4 out of 5 stars"'), roNamed);
+  assert.ok(!roNamed.includes('aria-labelledby'), 'read-only name must carry the value');
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

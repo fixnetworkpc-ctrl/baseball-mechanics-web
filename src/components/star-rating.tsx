@@ -24,12 +24,20 @@ export function StarRating({
   readOnly = false,
   size = 16,
   label = "Rating",
+  labelledBy,
 }: {
   value: number;
   onChange?: (v: number) => void;
   readOnly?: boolean;
   size?: number;
+  /** Accessible name. Ignored when `labelledBy` is set (interactive mode). */
   label?: string;
+  /**
+   * id of a visible label to name the radiogroup, avoiding a duplicate
+   * announcement. Interactive mode only — in read-only mode the name has to
+   * carry the value ("Rating: 3 out of 5 stars"), which an external label can't.
+   */
+  labelledBy?: string;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -71,7 +79,12 @@ export function StarRating({
   }
 
   return (
-    <div role="radiogroup" aria-label={label} className="flex items-center gap-0.5">
+    <div
+      role="radiogroup"
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : label}
+      className="flex items-center gap-0.5"
+    >
       {STARS.map((n) => (
         <button
           key={n}
