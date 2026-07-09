@@ -25,7 +25,12 @@ export function StatTile({
 }) {
   const has = value != null && !Number.isNaN(value);
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
+    <Card
+      className={cn(
+        "relative overflow-hidden transition-all duration-200 hover:border-ring/30 hover:shadow-md",
+        className
+      )}
+    >
       <span className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: accent }} />
       <CardContent className="py-4">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>

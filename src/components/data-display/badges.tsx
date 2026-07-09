@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 // Use these instead of hand-coloring a <Badge> per call site.
 
 const TIER_COLOR: Record<string, string> = {
-  elite: "var(--primary)",
+  elite: "var(--brand-accent)",
   high: "var(--accent-blue)",
   moderate: "var(--success)",
   developing: "var(--muted-foreground)",

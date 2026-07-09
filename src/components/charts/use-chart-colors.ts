@@ -35,6 +35,10 @@ export function useChartColors(): ChartColors {
   const [c, setC] = useState<ChartColors>(DEFAULTS);
 
   useEffect(() => {
+    // Reading resolved CSS custom properties off the document is exactly the
+    // "subscribe to an external system" case the rule carves out; the values
+    // only exist after paint, so they cannot be derived during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setC({
       series: [1, 2, 3, 4, 5].map((i) => readVar(`--chart-${i}`, DEFAULTS.series[i - 1])),
       grid: readVar("--border", DEFAULTS.grid),

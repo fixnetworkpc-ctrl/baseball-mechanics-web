@@ -22,6 +22,9 @@ export function AnimatedCounter({
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
+      // matchMedia is only readable on the client, so the reduced-motion jump to
+      // the final value can't be computed during render without a hydration mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplay(value);
       return;
     }

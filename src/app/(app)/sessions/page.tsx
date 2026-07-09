@@ -15,22 +15,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
 
-function SessionsInner() {
-  const params = useSearchParams();
-  const playerId = params.get("playerId") || undefined;
-  const mode = params.get("mode") || undefined;
-  const name = params.get("name") || undefined;
-
+function SessionsInner({
+  playerId,
+  mode,
+  name,
+}: {
+  playerId?: string;
+  mode?: string;
+  name?: string;
+}) {
   const [sessions, setSessions] = useState<MySession[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // No synchronous loading/error reset here: the caller remounts this component
+  // via `key` when playerId/mode change, so state starts fresh on every query.
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
     getMySessions({ playerId, mode })
       .then((res) => {
         if (!active) return;
@@ -149,10 +152,28 @@ function SessionCard({ s }: { s: MySession }) {
   );
 }
 
+// Reads the query string and remounts SessionsInner whenever it changes, so the
+// fetch component never has to reset its own state mid-life.
+function SessionsRoute() {
+  const params = useSearchParams();
+  const playerId = params.get("playerId") || undefined;
+  const mode = params.get("mode") || undefined;
+  const name = params.get("name") || undefined;
+
+  return (
+    <SessionsInner
+      key={`${playerId ?? ""}|${mode ?? ""}`}
+      playerId={playerId}
+      mode={mode}
+      name={name}
+    />
+  );
+}
+
 export default function SessionsPage() {
   return (
     <Suspense fallback={<LoadingState rows={4} />}>
-      <SessionsInner />
+      <SessionsRoute />
     </Suspense>
   );
 }

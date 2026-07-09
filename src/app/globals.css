@@ -47,6 +47,7 @@
   --color-card: var(--card);
 
   /* Brand extensions (not part of stock shadcn) */
+  --color-brand-accent: var(--brand-accent);
   --color-accent-blue: var(--accent-blue);
   --color-accent-blue-foreground: var(--accent-blue-foreground);
   --color-success: var(--success);
@@ -89,17 +90,21 @@
   --ring: #2b80ff;
 
   /* brand extensions */
+  /* --brand-accent is the text/icon-safe red. --primary stays the fill red
+     (white-on-primary is 6.18:1); on dark navy the fill red only reaches
+     2.89:1 as text, so red *text* and red *icons* must use --brand-accent. */
+  --brand-accent: #c21026;
   --accent-blue: #1e6be6;
   --accent-blue-foreground: #ffffff;
-  --success: #1fa95c;
+  --success: #177d44;
   --success-foreground: #ffffff;
-  --warning: #c96a12;
+  --warning: #a7580f;
   --warning-foreground: #ffffff;
 
-  --grade-a: #1fa95c;
-  --grade-b: #27ae60;
-  --grade-c: #b8860b;
-  --grade-d: #c96a12;
+  --grade-a: #177d44;
+  --grade-b: #1c7d45;
+  --grade-c: #8d6608;
+  --grade-d: #a7580f;
   --grade-f: #d3182b;
 
   --glow-red: rgba(194, 16, 38, 0.25);
@@ -140,13 +145,14 @@
   --muted-foreground: #7e97b4;
   --accent: #12263f;
   --accent-foreground: #ecf3ff;
-  --destructive: #e84050;
+  --destructive: #ea4d5b;
 
   --border: #1c3254;
   --input: #1c3254;
   --ring: #2b80ff;
 
   /* brand extensions */
+  --brand-accent: #f04359;
   --accent-blue: #2b80ff;
   --accent-blue-foreground: #ffffff;
   --success: #2ecc71;

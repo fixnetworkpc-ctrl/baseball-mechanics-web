@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { createOrg, joinOrg, getMyOrgs, getOrgAnalytics } from "@/lib/org-service";
@@ -25,7 +25,6 @@ import { FilterChips } from "@/components/filter-chips";
 const ORG_TYPES = ["Travel Ball", "Academy", "HS Program", "Showcase Org", "Other"];
 
 export default function OrgPortalPage() {
-  const router = useRouter();
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [analytics, setAnalytics] = useState<Record<string, OrgAnalytics | null>>({});
   const [loading, setLoading] = useState(true);
@@ -62,10 +61,11 @@ export default function OrgPortalPage() {
     }
   }
 
+  // `loading` already starts true, and every setState inside `load` happens after
+  // an await, so no state is set synchronously during this effect's render pass.
   useEffect(() => {
-    setLoading(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load().finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCreate() {
@@ -122,7 +122,7 @@ export default function OrgPortalPage() {
       ) : (
         <div className="space-y-3">
           {orgs.map((org) => (
-            <OrgCard key={org.id} org={org} analytics={analytics[org.id]} onOpen={() => router.push(`/org/${org.id}`)} />
+            <OrgCard key={org.id} org={org} analytics={analytics[org.id]} />
           ))}
         </div>
       )}
@@ -184,16 +184,17 @@ export default function OrgPortalPage() {
 function OrgCard({
   org,
   analytics,
-  onOpen,
 }: {
   org: Org;
   analytics: OrgAnalytics | null | undefined;
-  onOpen: () => void;
 }) {
   const role = org.role || "player";
 
+  // A real <Link> rather than a click-handler on the Card: keyboard-focusable,
+  // announced as a link, and open-in-new-tab works.
   return (
-    <Card className="cursor-pointer hover:bg-accent/50 transition-colors border-l-4 border-l-primary" onClick={onOpen}>
+    <Card className="border-l-4 border-l-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent/50 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+      <Link href={`/org/${org.id}`} className="block rounded-[inherit] outline-none">
       <CardContent className="pt-6 space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -205,7 +206,7 @@ function OrgCard({
         </div>
 
         {analytics && (
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatChip label="Members" val={analytics.memberCount ?? "—"} />
             <StatChip label="Avg PMI" val={analytics.avgPMI ?? "—"} />
             <StatChip label="Avg HMI" val={analytics.avgHMI ?? "—"} />
@@ -220,6 +221,7 @@ function OrgCard({
           </div>
         )}
       </CardContent>
+      </Link>
     </Card>
   );
 }

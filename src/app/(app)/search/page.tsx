@@ -147,7 +147,7 @@ export default function SearchPage() {
             <FilterChips options={GRAD_YEARS.map((y) => ({ key: y, label: y }))} value={filters.gradYear} onChange={(v) => setFilter("gradYear", v)} />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="state" className="text-xs font-bold tracking-widest text-muted-foreground uppercase">State</Label>
               <Input

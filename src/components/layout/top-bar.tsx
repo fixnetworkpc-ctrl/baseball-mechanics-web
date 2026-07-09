@@ -6,15 +6,25 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // Sticky, glass top bar. On mobile it carries the menu button + brand mark;
 // on desktop it's a slim utility bar (theme toggle, future user menu).
-export function TopBar({ onMenu }: { onMenu: () => void }) {
+export function TopBar({
+  onMenu,
+  menuButtonRef,
+  drawerOpen = false,
+}: {
+  onMenu: () => void;
+  menuButtonRef?: React.Ref<HTMLButtonElement>;
+  drawerOpen?: boolean;
+}) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-2">
         <Button
+          ref={menuButtonRef}
           variant="ghost"
           size="icon-sm"
           className="md:hidden"
           aria-label="Open navigation"
+          aria-expanded={drawerOpen}
           onClick={onMenu}
         >
           <Menu />

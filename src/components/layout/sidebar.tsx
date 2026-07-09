@@ -37,11 +37,11 @@ export function Sidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
+      <nav aria-label="Primary" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi} className="space-y-1">
             {group.heading && (
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {group.heading}
               </p>
             )}
@@ -53,17 +53,19 @@ export function Sidebar({
                   key={item.href}
                   href={item.href}
                   onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                     active
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                   )}
                 >
                   {active && (
-                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand-accent" />
                   )}
-                  <Icon className={cn("size-4", active && "text-primary")} />
+                  <Icon className={cn("size-4", active && "text-brand-accent")} />
                   {item.label}
                 </Link>
               );

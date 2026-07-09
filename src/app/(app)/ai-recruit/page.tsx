@@ -84,7 +84,7 @@ export default function AiRecruitPage() {
             <button
               key={q}
               onClick={() => { setQuery(q); run(q); }}
-              className="w-full text-left rounded-lg border bg-background px-4 py-3 text-sm hover:bg-accent transition-colors"
+              className="w-full rounded-lg border bg-background px-4 py-3 text-left text-sm transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {q}
             </button>

@@ -239,7 +239,7 @@ export default function DashboardPage() {
             <Card className="group relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
               <span className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
               <CardContent className="relative flex items-center gap-3 py-5">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-brand-accent">
                   <Sparkles className="size-5" />
                 </div>
                 <div>
@@ -311,7 +311,13 @@ function SectionTitle({
       {Icon && <Icon className="size-4 text-muted-foreground" />}
       <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h2>
       {href && (
-        <Link href={href} className={cn("ml-auto text-sm text-primary hover:underline")}>
+        <Link
+          href={href}
+          className={cn(
+            "ml-auto rounded-sm text-sm text-brand-accent hover:underline",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          )}
+        >
           View all
         </Link>
       )}

@@ -46,14 +46,17 @@ export function PlayerCard({
 
   const base = cn(
     "transition-all duration-200",
-    href && "hover:-translate-y-0.5 hover:border-ring/40 hover:shadow-lg",
+    href &&
+      "hover:-translate-y-0.5 hover:border-ring/40 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
     className
   );
 
   if (href) {
     return (
       <Card className={base}>
-        <Link href={href}>{body}</Link>
+        <Link href={href} className="block rounded-[inherit] outline-none">
+          {body}
+        </Link>
       </Card>
     );
   }

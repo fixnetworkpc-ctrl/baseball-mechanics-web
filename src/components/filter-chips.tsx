@@ -17,9 +17,11 @@ export function FilterChips({
         <button
           key={opt.key}
           type="button"
+          aria-pressed={value === opt.key}
           onClick={() => onChange(value === opt.key ? "" : opt.key)}
           className={cn(
             "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             value === opt.key
               ? "border-primary bg-primary text-primary-foreground"
               : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"

@@ -217,14 +217,17 @@ export default function AlertsPage() {
           <DialogHeader>
             <DialogTitle>New Alert</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 max-h-72 overflow-y-auto">
+          <div role="radiogroup" aria-label="Alert type" className="space-y-2 max-h-72 overflow-y-auto">
             {ALERT_TYPES.map((at) => (
               <button
                 key={at.type}
                 type="button"
+                role="radio"
+                aria-checked={selType === at.type}
                 onClick={() => setSelType(at.type)}
                 className={cn(
-                  "w-full text-left rounded-md border p-3 transition-colors",
+                  "w-full rounded-md border p-3 text-left transition-colors",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                   selType === at.type ? "border-primary bg-accent" : "hover:bg-accent"
                 )}
               >
