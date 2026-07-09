@@ -58,6 +58,7 @@ export default function DiscoverPage() {
         state: player.state,
         pmi: player.latestPMI,
         hmi: player.latestHMI,
+        cmi: player.latestCMI,
         exitVelo: athletic?.exitVelo,
         pitchVelo: athletic?.pitchVelo,
       };
@@ -132,9 +133,15 @@ function AthleteCard({
   saving: boolean;
   onAddFav: () => void;
 }) {
-  const primaryScore = player.latestPMI ?? player.latestHMI;
-  const primaryLabel = player.latestPMI != null ? "PMI" : "HMI";
-  const vel = Math.max(player.pmiVelocity ?? -Infinity, player.hmiVelocity ?? -Infinity);
+  // Catching-only athletes have no PMI/HMI — fall through to CMI so they still
+  // show a score chip instead of rendering as a blank card.
+  const primaryScore = player.latestPMI ?? player.latestHMI ?? player.latestCMI;
+  const primaryLabel = player.latestPMI != null ? "PMI" : player.latestHMI != null ? "HMI" : "CMI";
+  const vel = Math.max(
+    player.pmiVelocity ?? -Infinity,
+    player.hmiVelocity ?? -Infinity,
+    player.cmiVelocity ?? -Infinity
+  );
   const hasVel = isFinite(vel);
   const tierClass = TIER_COLORS[player.upsideTier] ?? TIER_COLORS.developing;
   const meta = [player.position, player.gradYear && `'${player.gradYear.slice(-2)}`, player.state]

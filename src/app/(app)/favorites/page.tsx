@@ -157,7 +157,7 @@ function FavoriteCard({
 }) {
   const snap = fav.snapshot as {
     position?: string; gradYear?: string; school?: string; state?: string;
-    pmi?: number; hmi?: number; exitVelo?: string; pitchVelo?: string; sixty?: string;
+    pmi?: number; hmi?: number; cmi?: number; exitVelo?: string; pitchVelo?: string; sixty?: string;
   };
   const meta = [snap.position, snap.gradYear && `Class of ${snap.gradYear}`, snap.school, snap.state]
     .filter(Boolean)
@@ -174,6 +174,7 @@ function FavoriteCard({
           <div className="flex gap-2 shrink-0">
             {snap.pmi != null && <Badge variant="outline">PMI {snap.pmi}</Badge>}
             {snap.hmi != null && <Badge variant="outline">HMI {snap.hmi}</Badge>}
+            {snap.cmi != null && <Badge variant="outline">CMI {snap.cmi}</Badge>}
           </div>
         </div>
 

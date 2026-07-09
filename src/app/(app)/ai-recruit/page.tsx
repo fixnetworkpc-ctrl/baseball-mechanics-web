@@ -156,7 +156,9 @@ function AiPlayerCard({
   onSave: () => void;
   onFollow: () => void;
 }) {
-  const velSign = (player.pmi_velocity ?? 0) > 0 ? "+" : "";
+  // A catching-only athlete has no pmi/hmi velocity — fall through to cmi.
+  const vel = player.pmi_velocity ?? player.hmi_velocity ?? player.cmi_velocity ?? null;
+  const velSign = (vel ?? 0) > 0 ? "+" : "";
   const meta = [player.position, player.grad_year && `'${String(player.grad_year).slice(-2)}`, player.state]
     .filter(Boolean)
     .join(" · ");
@@ -176,15 +178,16 @@ function AiPlayerCard({
           <div className="flex flex-col items-end gap-1 shrink-0">
             {player.pmi != null && <Badge variant="outline">PMI {player.pmi}</Badge>}
             {player.hmi != null && <Badge variant="outline">HMI {player.hmi}</Badge>}
+            {player.cmi != null && <Badge variant="outline">CMI {player.cmi}</Badge>}
             {player.composite_score != null && <Badge variant="outline">CMP {player.composite_score}</Badge>}
           </div>
         </div>
 
-        {(player.pmi_velocity != null || player.session_count != null || player.tags?.length > 0) && (
+        {(vel != null || player.session_count != null || player.tags?.length > 0) && (
           <div className="flex flex-wrap gap-2 text-xs">
-            {player.pmi_velocity != null && (
-              <span className={player.pmi_velocity >= 0 ? "font-bold text-emerald-500" : "font-bold text-red-500"}>
-                {velSign}{player.pmi_velocity} pts/session
+            {vel != null && (
+              <span className={vel >= 0 ? "font-bold text-success" : "font-bold text-destructive"}>
+                {velSign}{vel} pts/session
               </span>
             )}
             {player.session_count != null && (

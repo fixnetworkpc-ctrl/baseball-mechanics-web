@@ -85,8 +85,10 @@ export interface PlayerCard {
   athletic: Record<string, unknown>;
   latestPMI: number | null;
   latestHMI: number | null;
+  latestCMI: number | null;
   pmiVelocity: number | null;
   hmiVelocity: number | null;
+  cmiVelocity: number | null;
   compositeScore: number;
   upsideTier: 'elite' | 'high' | 'moderate' | 'developing' | string;
   tags: string[];
@@ -110,8 +112,10 @@ export interface AiRecruitResult {
   composite_score: number;
   pmi: number | null;
   hmi: number | null;
+  cmi: number | null;
   pmi_velocity: number | null;
   hmi_velocity: number | null;
+  cmi_velocity: number | null;
   upside_tier: string;
   session_count: number;
   tags: string[];
