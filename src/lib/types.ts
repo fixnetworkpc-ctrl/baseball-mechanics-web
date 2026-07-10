@@ -256,3 +256,45 @@ export interface MyTeamResponse {
   team: TeamPayload | null;
   membership: TeamMembership | null;
 }
+
+// GET /admin/metrics. Shape is produced by the admin_metrics() Postgres function
+// (migration 013), with free_cap merged in from Redis by the server.
+//
+// `unattributed` is not noise to hide. Baseball and softball share one Supabase
+// project and softball's batting frame labels are byte-identical to ours, so some
+// rows cannot be assigned to either app. They are counted, never guessed at.
+export interface AdminMetrics {
+  app: string;
+  generated_at: string;
+  users: {
+    total_auth_users: number;   // spans BOTH apps — the shared project's whole user table
+    attributed: number;
+    unattributed: number;
+    new_7d: number;
+    new_30d: number;
+  };
+  active_users: { d1: number; d7: number; d30: number };
+  sessions: {
+    total: number;
+    last_7d: number;
+    last_30d: number;
+    unattributed: number;
+    by_mode: Record<string, number>;
+  };
+  sessions_per_active_user_30d: number;
+  avg_score_by_mode: Record<string, number>;
+  cost: {
+    events_total: number;
+    usd_total: number;
+    usd_last_30d: number;
+    usd_per_analysis: number;
+    usd_per_user_30d: number;
+    p50_latency_ms: number | null;
+    by_tier: Record<string, number>;
+  };
+  // Redis. `unavailable` when Redis is down; `truncated` when the SCAN hit its bound
+  // and `atCap` is therefore a floor, not a total.
+  free_cap:
+    | { unavailable: true }
+    | { atCap: number; scanned: number; truncated: boolean; limit: number };
+}
