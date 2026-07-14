@@ -2,9 +2,17 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Refreshes the auth session cookie on every request and redirects
-// unauthenticated users away from protected pages. Public pages: /login,
-// /search (no-auth per server.js), and any /p/[playerId] link-outs.
-const PUBLIC_PATHS = ['/login', '/search'];
+// unauthenticated users away from protected pages.
+//
+// /search USED to be public, because server.js served it without a token. It no longer
+// does: /search and /discover return lists of athletes, most of them minors, and open
+// enumeration of that was closed in the launch audit. The page must therefore sign the
+// visitor in first — left public, it would render and then throw "Not signed in" the
+// moment it called the backend.
+//
+// /p/[playerId] link-outs stay public on purpose: that is the shareable profile link a
+// player sends to a college coach who does not have an account.
+const PUBLIC_PATHS = ['/login'];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

@@ -232,7 +232,13 @@ export async function searchPlayers(filters: SearchFilters = {}): Promise<Search
   if (filters.mode) params.append('mode', filters.mode);
   if (filters.limit) params.append('limit', String(filters.limit));
   if (filters.offset) params.append('offset', String(filters.offset));
-  const res = await fetch(`${BACKEND_URL}/search?${params.toString()}`);
+  // /search and /discover return lists of athletes — mostly minors — and used to take
+  // no token at all, which made them a bulk enumeration surface on the open internet.
+  // They now require a real Supabase user, so both must send the recruiter's JWT.
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/search?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error(`Search request failed (${res.status})`);
   return res.json();
 }
@@ -240,7 +246,10 @@ export async function searchPlayers(filters: SearchFilters = {}): Promise<Search
 // ── Discover ──────────────────────────────────────────────────────────────────
 
 export async function getDiscoverCategories(): Promise<DiscoverCategory[]> {
-  const res = await fetch(`${BACKEND_URL}/discover`);
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/discover`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error(`Discover request failed (${res.status})`);
   return res.json();
 }
