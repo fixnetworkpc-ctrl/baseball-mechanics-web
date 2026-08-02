@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, RefreshCw, ShieldAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, LogIn, RefreshCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
-import { getAdminMetrics, ForbiddenError } from "@/lib/admin-service";
+import { getAdminMetrics, ForbiddenError, UnauthenticatedError } from "@/lib/admin-service";
 import { brand } from "@/lib/design/tokens";
 import type { AdminMetrics } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
@@ -21,8 +22,11 @@ const MODE_LABEL: Record<string, string> = {
 };
 
 export default function AdminPage() {
+  const router = useRouter();
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
-  const [forbidden, setForbidden] = useState(false);
+  // Three distinct states, not two: authorized, signed out, and signed in but not on
+  // the allowlist. Merging the last two is what sent an operator to edit a correct env var.
+  const [denied, setDenied] = useState<null | "signed-out" | "forbidden">(null);
   // Starts true so the first paint is the skeleton. The initial fetch must NOT
   // set it again — a synchronous setState before the first `await` runs inside the
   // effect body and cascades a render.
@@ -36,11 +40,12 @@ export default function AdminPage() {
       const data = await getAdminMetrics();
       if (!alive.current) return;
       setMetrics(data);
-      setForbidden(false);
+      setDenied(null);
       if (isRefresh) toast.success("Metrics refreshed");
     } catch (err) {
       if (!alive.current) return;
-      if (err instanceof ForbiddenError) setForbidden(true);
+      if (err instanceof UnauthenticatedError) setDenied("signed-out");
+      else if (err instanceof ForbiddenError) setDenied("forbidden");
       else toast.error(err instanceof Error ? err.message : "Could not load metrics.");
     } finally {
       if (alive.current) setLoading(false);
@@ -64,12 +69,23 @@ export default function AdminPage() {
     );
   }
 
-  if (forbidden) {
+  if (denied === "signed-out") {
+    return (
+      <EmptyState
+        icon={LogIn}
+        title="Not signed in"
+        body="This page reads live operator metrics and needs a signed-in session. Sign in with the account on the operator allowlist, then come back."
+        action={<Button onClick={() => router.push("/login")}>Go to sign in</Button>}
+      />
+    );
+  }
+
+  if (denied === "forbidden") {
     return (
       <EmptyState
         icon={ShieldAlert}
         title="Not authorized"
-        body="This account is not on the operator allowlist. Access is granted by the ADMIN_USER_IDS environment variable on the server, which admits nobody until it is set."
+        body="You are signed in, but this account is not on the operator allowlist. Access is granted by the ADMIN_USER_IDS environment variable on the server. Signing in as a different account is usually the fix — the allowlist is rarely the thing that is wrong."
       />
     );
   }
