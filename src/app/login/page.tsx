@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrendingUp, Users, Sparkles } from "lucide-react";
-import { recruiterSignIn, recruiterSignUp } from "@/lib/recruiter-service";
+import {
+  recruiterSignIn,
+  recruiterSignUp,
+  requestPasswordReset,
+  verifyPasswordResetCode,
+  updatePassword,
+} from "@/lib/recruiter-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +19,95 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
+  // "auth" is the sign-in/sign-up card; "reset" swaps the whole card for recovery
+  // rather than adding a third tab — recovery is a detour out of sign-in, not a
+  // peer of it, and a tab would imply you can sit there.
+  const [mode, setMode] = useState<"auth" | "reset">("auth");
+  const [resetStep, setResetStep] = useState<"request" | "verify">("request");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  function goToReset() {
+    setMode("reset");
+    setResetStep("request");
+    setError("");
+    setSuccess("");
+    setPassword("");
+    setConfirm("");
+    setCode("");
+  }
+
+  function backToSignIn() {
+    setMode("auth");
+    setTab("signin");
+    setError("");
+    setSuccess("");
+    setPassword("");
+    setConfirm("");
+    setCode("");
+  }
+
+  async function handleReset(e?: React.SyntheticEvent) {
+    e?.preventDefault();
+    if (loading) return;
+    setError("");
+    setSuccess("");
+
+    if (resetStep === "request") {
+      if (!email.trim()) {
+        setError("Enter your email address.");
+        return;
+      }
+      setLoading(true);
+      try {
+        await requestPasswordReset(email.trim());
+        // Worded so it reveals nothing either way. Supabase does not error on an
+        // unknown address, and confirming one here would make this an
+        // account-existence oracle for anyone who can load the page.
+        setSuccess("If an account exists for that email, we sent it a six-digit code.");
+        setResetStep("verify");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not send a code. Try again.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!code.trim()) {
+      setError("Enter the six-digit code from your email.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Verifying the code signs the user in; that session is what authorizes the
+      // password write. They must happen together — see recruiter-service.ts.
+      await verifyPasswordResetCode(email.trim(), code.trim());
+      await updatePassword(password);
+      router.replace("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "That code was not accepted. Request a new one and try again.",
+      );
+      setLoading(false);
+    }
+  }
 
   // Base UI's <Button> renders a native `type="button"` and ignores a passed
   // `type="submit"`, so submission is driven from onClick (and form onSubmit).
@@ -123,45 +212,152 @@ export default function LoginPage() {
 
           <Card>
             <CardHeader>
-              <Tabs value={tab} onValueChange={(v) => { setTab(v as "signin" | "signup"); setError(""); setSuccess(""); }}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="signin" className="flex-1">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup" className="flex-1">Create Account</TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {mode === "auth" ? (
+                <Tabs value={tab} onValueChange={(v) => { setTab(v as "signin" | "signup"); setError(""); setSuccess(""); }}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="signin" className="flex-1">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup" className="flex-1">Create Account</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              ) : (
+                <div className="space-y-1">
+                  {/* h2, not h1: the hero and the mobile header already own the page's h1. */}
+                  <h2 className="text-lg font-bold tracking-tight">Reset your password</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {resetStep === "request"
+                      ? "We'll email you a six-digit code."
+                      : "Enter the code we emailed you, then choose a new password."}
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {tab === "signup" && (
-                  <p className="text-sm text-muted-foreground">
-                    Create a free recruiter account to save players, add notes, and access the full scouting dashboard.
-                  </p>
-                )}
+              {mode === "auth" ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {tab === "signup" && (
+                    <p className="text-sm text-muted-foreground">
+                      Create a free recruiter account to save players, add notes, and access the full scouting dashboard.
+                    </p>
+                  )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" autoComplete="email" placeholder="recruiter@college.edu" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" autoComplete={tab === "signup" ? "new-password" : "current-password"} placeholder="6+ characters" value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-
-                {tab === "signup" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirm">Confirm password</Label>
-                    <Input id="confirm" type="password" autoComplete="new-password" placeholder="Repeat password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" autoComplete="email" placeholder="recruiter@college.edu" value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
-                )}
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                {success && <p className="text-sm text-success">{success}</p>}
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" type="password" autoComplete={tab === "signup" ? "new-password" : "current-password"} placeholder="6+ characters" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
 
-                <Button type="submit" className="w-full" disabled={loading} onClick={handleSubmit}>
-                  {loading ? "Please wait…" : tab === "signup" ? "Create Account" : "Sign In"}
-                </Button>
-              </form>
+                  {tab === "signup" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm">Confirm password</Label>
+                      <Input id="confirm" type="password" autoComplete="new-password" placeholder="Repeat password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                    </div>
+                  )}
+
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  {success && <p className="text-sm text-success">{success}</p>}
+
+                  <Button type="submit" className="w-full" disabled={loading} onClick={handleSubmit}>
+                    {loading ? "Please wait…" : tab === "signup" ? "Create Account" : "Sign In"}
+                  </Button>
+
+                  {tab === "signin" && (
+                    <p className="text-center">
+                      <button
+                        type="button"
+                        onClick={goToReset}
+                        className="rounded-sm text-sm text-brand-accent hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </p>
+                  )}
+                </form>
+              ) : (
+                <form onSubmit={handleReset} className="space-y-4">
+                  {resetStep === "request" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="recruiter@college.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Sent to <span className="font-medium text-foreground">{email.trim()}</span>.
+                      </p>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="reset-code">Six-digit code</Label>
+                        <Input
+                          id="reset-code"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          placeholder="123456"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">New password</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="6+ characters"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="new-confirm">Confirm new password</Label>
+                        <Input
+                          id="new-confirm"
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="Repeat password"
+                          value={confirm}
+                          onChange={(e) => setConfirm(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  {success && <p className="text-sm text-success">{success}</p>}
+
+                  <Button type="submit" className="w-full" disabled={loading} onClick={handleReset}>
+                    {loading
+                      ? "Please wait…"
+                      : resetStep === "request"
+                        ? "Send code"
+                        : "Update password"}
+                  </Button>
+
+                  <p className="text-center">
+                    <button
+                      type="button"
+                      onClick={backToSignIn}
+                      className="rounded-sm text-sm text-brand-accent hover:underline"
+                    >
+                      Back to sign in
+                    </button>
+                  </p>
+                </form>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -41,6 +41,43 @@ export async function recruiterSignOut() {
   await supabase.auth.signOut();
 }
 
+// ── Password recovery ─────────────────────────────────────────────────────────
+//
+// CODE-based, not link-based, and that choice is load-bearing. A link flow needs
+// its redirect URL on Supabase's allowlist, and every Vercel preview deployment
+// gets a new URL — so recovery would silently break on previews and on any future
+// domain change. A six-digit code carries no URL at all.
+//
+// 🔴 REQUIRES the Supabase "Reset Password" email template to contain {{ .Token }}.
+// It is a THIRD template, separate from Magic Link and Confirm-signup (both of
+// which were already switched to {{ .Token }}). Left at its default it mails a
+// {{ .ConfirmationURL }} link and the user never receives a code to type here.
+
+// Deliberately resolves the same way whether or not the account exists — Supabase
+// does not error on an unknown email, and the caller must not either. Reporting
+// "no such account" would turn this box into an account-existence oracle.
+export async function requestPasswordReset(email: string) {
+  const supabase = createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) throw error;
+}
+
+// Verifying a recovery code SIGNS THE USER IN — that session is what authorizes
+// the updateUser call below. The two steps therefore cannot be split across a
+// page reload, and updatePassword is useless on its own.
+export async function verifyPasswordResetCode(email: string, token: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'recovery' });
+  if (error) throw error;
+  return data;
+}
+
+export async function updatePassword(password: string) {
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
 async function requireAccessToken(): Promise<string> {
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
