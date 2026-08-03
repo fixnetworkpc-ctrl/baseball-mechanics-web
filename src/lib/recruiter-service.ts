@@ -46,7 +46,12 @@ export async function recruiterSignOut() {
 // CODE-based, not link-based, and that choice is load-bearing. A link flow needs
 // its redirect URL on Supabase's allowlist, and every Vercel preview deployment
 // gets a new URL — so recovery would silently break on previews and on any future
-// domain change. A six-digit code carries no URL at all.
+// domain change. A numeric code carries no URL at all.
+//
+// ⚠️ Do NOT assume the code is 6 digits. Supabase's email OTP length is a project
+// setting (6-10); this project is on 8. Anything that hardcodes a length — an input
+// maxLength, a validator, UI copy — breaks verification silently the moment that
+// setting differs. The UI is length-agnostic and lets Supabase reject bad codes.
 //
 // 🔴 REQUIRES the Supabase "Reset Password" email template to contain {{ .Token }}.
 // It is a THIRD template, separate from Magic Link and Confirm-signup (both of

@@ -69,7 +69,7 @@ export default function LoginPage() {
         // Worded so it reveals nothing either way. Supabase does not error on an
         // unknown address, and confirming one here would make this an
         // account-existence oracle for anyone who can load the page.
-        setSuccess("If an account exists for that email, we sent it a six-digit code.");
+        setSuccess("If an account exists for that email, we sent it a verification code.");
         setResetStep("verify");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not send a code. Try again.");
@@ -80,7 +80,7 @@ export default function LoginPage() {
     }
 
     if (!code.trim()) {
-      setError("Enter the six-digit code from your email.");
+      setError("Enter the code from your email.");
       return;
     }
     if (password.length < 6) {
@@ -225,7 +225,7 @@ export default function LoginPage() {
                   <h2 className="text-lg font-bold tracking-tight">Reset your password</h2>
                   <p className="text-sm text-muted-foreground">
                     {resetStep === "request"
-                      ? "We'll email you a six-digit code."
+                      ? "We'll email you a verification code."
                       : "Enter the code we emailed you, then choose a new password."}
                   </p>
                 </div>
@@ -297,14 +297,18 @@ export default function LoginPage() {
                       </p>
 
                       <div className="space-y-2">
-                        <Label htmlFor="reset-code">Six-digit code</Label>
+                        <Label htmlFor="reset-code">Verification code</Label>
+                        {/* Length is NOT assumed. Supabase's email OTP length is a project
+                            setting (6-10 digits; this project is on 8), so a hardcoded
+                            maxLength of 6 silently truncated the code and made every
+                            verification fail. 10 is the ceiling, not the expected value. */}
                         <Input
                           id="reset-code"
                           type="text"
                           inputMode="numeric"
                           autoComplete="one-time-code"
-                          maxLength={6}
-                          placeholder="123456"
+                          maxLength={10}
+                          placeholder="Code from your email"
                           value={code}
                           onChange={(e) => setCode(e.target.value)}
                         />
