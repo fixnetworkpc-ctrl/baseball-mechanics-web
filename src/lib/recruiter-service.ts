@@ -16,6 +16,7 @@ import type {
   AiRecruitResponse,
   AppNotification,
   Follow,
+  PendingVerification,
 } from '@/lib/types';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
@@ -360,4 +361,39 @@ export async function markNotificationsRead(ids: string[]) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ ids: ids || [] }),
   });
+}
+
+// ── Athlete verification (Phase 1) ────────────────────────────────────────────
+//
+// 🔑 Nothing here sends a role, an organization, or a coach identity. Authority is resolved
+// entirely server-side from team/org membership plus a coach_profiles row — a client that
+// asserted its own role would make the whole ledger self-asserted.
+
+export async function getPendingVerifications(): Promise<PendingVerification[]> {
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/verification/pending`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Could not load verification requests (${res.status})`);
+  const data = await res.json();
+  return data.requests ?? [];
+}
+
+// Addressed by request id, NOT by token: only the sha256 of a token is ever stored, so the
+// server has no raw token to hand back. The emailed link uses the token form instead.
+export async function resolveVerification(
+  requestId: string,
+  decision: 'approved' | 'rejected',
+  note?: string,
+): Promise<void> {
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/verification/resolve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ requestId, decision, note }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Could not record that decision (${res.status})`);
+  }
 }

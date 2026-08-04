@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { VerificationChip } from "@/components/data-display/verification-chip";
 import {
   Dialog,
   DialogContent,
@@ -273,12 +274,35 @@ function PlayerResultCard({
           </div>
         </div>
 
+        {/* 🔴 Measurables carry their attribution here. Before this, a self-reported 60 and a
+            coach-verified one rendered as identical chips — a recruiter filtering on these
+            numbers was filtering on unverified claims presented as measurements. */}
         {(athletic?.exitVelo || athletic?.pitchVelo || athletic?.sixty || athletic?.popTime) && (
-          <div className="flex flex-wrap gap-2">
-            {athletic.exitVelo && <Badge variant="secondary">EV {athletic.exitVelo} mph</Badge>}
-            {athletic.pitchVelo && <Badge variant="secondary">Velo {athletic.pitchVelo} mph</Badge>}
-            {athletic.sixty && <Badge variant="secondary">60: {athletic.sixty}</Badge>}
-            {athletic.popTime && <Badge variant="secondary">Pop {athletic.popTime}</Badge>}
+          <div className="flex flex-wrap items-center gap-2">
+            {athletic.exitVelo && (
+              <span className="flex items-center gap-1">
+                <Badge variant="secondary">EV {athletic.exitVelo} mph</Badge>
+                <VerificationChip entry={player.verification?.exit_velo} />
+              </span>
+            )}
+            {athletic.pitchVelo && (
+              <span className="flex items-center gap-1">
+                <Badge variant="secondary">Velo {athletic.pitchVelo} mph</Badge>
+                <VerificationChip entry={player.verification?.pitch_velo} />
+              </span>
+            )}
+            {athletic.sixty && (
+              <span className="flex items-center gap-1">
+                <Badge variant="secondary">60: {athletic.sixty}</Badge>
+                <VerificationChip entry={player.verification?.sixty} />
+              </span>
+            )}
+            {athletic.popTime && (
+              <span className="flex items-center gap-1">
+                <Badge variant="secondary">Pop {athletic.popTime}</Badge>
+                <VerificationChip entry={player.verification?.pop_time} />
+              </span>
+            )}
           </div>
         )}
 

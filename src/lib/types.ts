@@ -72,7 +72,35 @@ export interface SearchResult {
   sessionCount: number;
   avgPitchScore: number | null;
   avgHitScore: number | null;
+  // Optional because older server builds do not send it. Absent means "no attribution
+  // available", NOT "verified" — the UI must degrade to Self Reported, never to a badge.
+  verification?: VerificationMap;
 }
+
+
+// ── Athlete verification (Phase 1) ────────────────────────────────────────────
+//
+// 🔴 Computed by the SERVER at read time from the athlete_verifications ledger — never
+// stored on the recruiting profile, because the athlete writes that row directly from the
+// client. A recruiter-facing surface that renders `athletic` without this map is showing
+// self-reported numbers as fact, which is the problem the ledger exists to solve.
+export type VerificationStatus = 'self_reported' | 'coach_verified' | 'value_changed';
+
+export interface VerificationEntry {
+  value: string;
+  verification_status: VerificationStatus;
+  verified_by: string | null;
+  verified_at: string | null;
+  source_type: string | null;
+  // The value that was ACTUALLY attested. Differs from `value` exactly when the status is
+  // value_changed, which is the case worth surfacing.
+  verified_value: string | null;
+}
+
+export type VerificationMap = Partial<Record<
+  'sixty' | 'exit_velo' | 'pitch_velo' | 'pop_time' | 'height' | 'weight',
+  VerificationEntry
+>>;
 
 // GET /discover player card shape (toPlayerCard in server.js)
 export interface PlayerCard {
@@ -297,4 +325,17 @@ export interface AdminMetrics {
   free_cap:
     | { unavailable: true }
     | { atCap: number; scanned: number; truncated: boolean; limit: number };
+}
+
+// GET /verification/pending row. Server-filtered to requests the caller has authority
+// over — the coach_email on the request is a routing hint, never an entitlement.
+export interface PendingVerification {
+  id: string;
+  athlete_id: string;
+  claim_field: string;
+  claim_value: string;
+  requested_at: string;
+  status: string;
+  playerName: string;
+  verifierRole: string;
 }
