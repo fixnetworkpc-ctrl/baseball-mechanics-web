@@ -339,3 +339,15 @@ export interface PendingVerification {
   playerName: string;
   verifierRole: string;
 }
+
+// GET /coach-profile → { profile }. The identity a verification is attributed to.
+// `verified_at` is NULL in Phase 1 — the coach themselves is not vetted, only what they
+// attest. It is a timestamp rather than a boolean for the same reason the whole ledger is.
+export interface CoachProfile {
+  id: string;
+  display_name: string;
+  school_or_team: string | null;
+  organization_id: string | null;
+  verified_at: string | null;
+  created_at: string;
+}

@@ -3,13 +3,20 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
-import { getPendingVerifications, resolveVerification } from "@/lib/recruiter-service";
-import type { PendingVerification } from "@/lib/types";
+import {
+  getPendingVerifications,
+  resolveVerification,
+  getCoachProfile,
+  saveCoachProfile,
+} from "@/lib/recruiter-service";
+import type { PendingVerification, CoachProfile } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const CLAIM_LABELS: Record<string, string> = {
   sixty: "60 Yard Dash",
@@ -30,19 +37,39 @@ const CLAIM_LABELS: Record<string, string> = {
  */
 export default function VerificationPage() {
   const [requests, setRequests] = useState<PendingVerification[]>([]);
+  const [profile, setProfile] = useState<CoachProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [team, setTeam] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      setRequests(await getPendingVerifications());
+      const [p, rows] = await Promise.all([getCoachProfile(), getPendingVerifications()]);
+      setProfile(p);
+      setRequests(rows);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load verification requests.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function createProfile() {
+    if (!name.trim()) return;
+    setSavingProfile(true);
+    try {
+      await saveCoachProfile({ displayName: name.trim(), schoolOrTeam: team.trim() || undefined });
+      toast.success("Coach profile saved.");
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save your coach profile.");
+    } finally {
+      setSavingProfile(false);
     }
   }
 
@@ -77,6 +104,47 @@ export default function VerificationPage() {
         <LoadingState />
       ) : error ? (
         <EmptyState icon={BadgeCheck} title="Could not load" body={error} />
+      ) : !profile ? (
+        /* 🔑 A coach profile is required before any request can be answered — the server
+           resolves the verifier through it. Creating one grants NOTHING on its own:
+           authority over a specific athlete still comes from team or organization
+           membership, which a coach cannot self-assign. That is why this is a plain form
+           and not an approval queue. */
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <div>
+              <h2 className="text-sm font-bold">Set up your coach profile</h2>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Your name appears on every measurable you verify. This does not grant you
+                access to anyone — you can only verify athletes already on your team or in
+                your organization.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="coach-name">Your name</Label>
+              <Input
+                id="coach-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Coach Smith"
+                maxLength={80}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="coach-team">School or team (optional)</Label>
+              <Input
+                id="coach-team"
+                value={team}
+                onChange={(e) => setTeam(e.target.value)}
+                placeholder="e.g. Northview HS"
+                maxLength={120}
+              />
+            </div>
+            <Button disabled={!name.trim() || savingProfile} onClick={createProfile}>
+              {savingProfile ? "Saving…" : "Save Profile"}
+            </Button>
+          </CardContent>
+        </Card>
       ) : requests.length === 0 ? (
         <EmptyState
           icon={BadgeCheck}

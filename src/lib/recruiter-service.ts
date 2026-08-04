@@ -17,6 +17,7 @@ import type {
   AppNotification,
   Follow,
   PendingVerification,
+  CoachProfile,
 } from '@/lib/types';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
@@ -395,5 +396,38 @@ export async function resolveVerification(
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.message || `Could not record that decision (${res.status})`);
+  }
+}
+
+// ── Coach identity ────────────────────────────────────────────────────────────
+//
+// 🔑 A coach profile is an IDENTITY record, not a PERMISSION record. Creating one grants
+// nothing — authority over a specific athlete still comes from team/org membership, which a
+// coach cannot self-assign. That is what makes self-registration safe here.
+
+export async function getCoachProfile(): Promise<CoachProfile | null> {
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/coach-profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.profile ?? null;
+}
+
+export async function saveCoachProfile(input: {
+  displayName: string;
+  schoolOrTeam?: string;
+  organizationId?: string;
+}): Promise<void> {
+  const token = await requireAccessToken();
+  const res = await fetch(`${BACKEND_URL}/coach-profile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Could not save your coach profile (${res.status})`);
   }
 }
