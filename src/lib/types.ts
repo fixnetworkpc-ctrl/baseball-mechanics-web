@@ -264,6 +264,12 @@ export interface LeaderboardEntry {
 export interface TeamPayload {
   teamId: string;
   teamName: string | null;
+  // 🔑 The server's OWN answer to "may this caller act on the team", not a guess from a
+  // self-declared role. buildTeamPayload derives it from team.ownerUserId, which is the same
+  // fact the Coach Portal routes authorise on — so the UI can hide controls that would 403
+  // instead of offering them and failing. The mobile app learned this the hard way: TeamScreen
+  // gated a control on the user's self-declared 'Coach' and joined-team coaches got a 403.
+  isOwner?: boolean;
   ageDivision: string | null;
   joinCode: string | null;
   createdAt: string | null;
@@ -351,3 +357,116 @@ export interface CoachProfile {
   verified_at: string | null;
   created_at: string;
 }
+
+// ── Coach Portal — the practice lifecycle ────────────────────────────────────
+// Server: COACH_PORTAL_SPEC.md §7, routes in server.js, engines vendored at
+// server/vendor/mechanicsIntelligence. These shapes are what the routes RETURN;
+// nothing here is computed in this repo.
+
+export interface PlanSegment {
+  segmentId: string;
+  title: string;
+  type: string;
+  section?: string;
+  groupType?: string;
+  players?: string[];
+  category?: string;
+  categoryLabel?: string;
+  drills?: { drillId?: string; drillName?: string }[];
+  durationMinutes?: number;
+  objective?: string;
+  successMetrics?: string[];
+  coachingNotes?: string[];
+}
+
+export interface GeneratedPlan {
+  planId?: string;
+  mode: string;
+  totalMinutes: number;
+  wallClockMinutes?: number;
+  requestedMinutes?: number;
+  totalPlayers: number;
+  ageDivision?: string;
+  focusThemes: string[];
+  planConfidence?: string | null;
+  excludedPlayers?: string[];
+  segments: PlanSegment[];
+}
+
+// POST /practice-plans/generate
+export interface GenerateResponse {
+  plan: GeneratedPlan | null;
+  mode: string;
+  excludedPlayers: string[];
+  opponentNote: string | null;
+  generatorVersion: number;
+  engineVersion: number;
+}
+
+export interface PracticeObservation {
+  playerName: string;
+  attended: boolean;
+  participation: 'full' | 'partial' | 'limited' | null;
+  winTag: string | null;
+  coachNote: string | null;
+}
+
+// 🔴 The report a coach shows a team. It carries ONLY what was observed and what was
+// actually completed — a player with nothing recorded is ABSENT from `players`, never
+// present with an empty list. Rendering must not invent a placeholder row for them.
+export interface PracticeHighlights {
+  title: string;
+  generatedAt: string;
+  attendedCount: number;
+  segmentsCompleted: string[];
+  players: { playerName: string; highlights: string[] }[];
+}
+
+// GET /practice-plans/:id
+export interface PracticePlanDetail {
+  plan: {
+    id: string;
+    savedAt: string | null;
+    teamId: string | null;
+    mode: string | null;
+    focus: string | null;
+    opponentNote: string | null;
+    status: 'draft' | 'saved' | 'running' | 'complete';
+    startedAt: string | null;
+    endedAt: string | null;
+    segmentsCompleted: string[];
+    totalMinutes: number | null;
+    totalPlayers: number | null;
+    ageDivision: string | null;
+    focusThemes: string[];
+    planConfidence: string | null;
+    fillMode: string | null;
+    generatorVersion: number | null;
+    engineVersion: number | null;
+    plan: GeneratedPlan | null;
+  };
+  observations: PracticeObservation[];
+  highlights: PracticeHighlights | null;
+}
+
+// GET /teams/:id/development — sorted weakest-first by the server.
+export interface TeamDevelopment {
+  players: number;
+  categories: { category: string; average: number; playerCount: number; lowest: number }[];
+}
+
+// GET /players/:id/development-card
+export interface DevelopmentCard {
+  playerName: string;
+  sessionCount: number;
+  latestDate: string | null;
+  mechanicsScore: Record<string, unknown> | null;
+  profile: Record<string, unknown> | null;
+  strengths: { title: string; detail?: string }[];
+  growthAreas: { title: string; detail?: string; priority?: string }[];
+  drillHistory: Record<string, unknown>;
+}
+
+export const PRACTICE_FOCUS = ['pitching', 'batting', 'catching', 'full_team'] as const;
+export type PracticeFocus = (typeof PRACTICE_FOCUS)[number];
+export const PRACTICE_MINUTES = [15, 30, 45, 60, 90, 120] as const;
