@@ -4,19 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Users, Star, ClipboardList, Search, Sparkles, Compass, TrendingUp } from "lucide-react";
 import {
-  getRecruiterProfile,
   getFavorites,
   getNotifications,
 } from "@/lib/recruiter-service";
-import { getMyPlayers, getMySessions, getMyTeam, getMyPracticePlans, overallScore } from "@/lib/team-service";
+import { getMySessions, getMyPracticePlans, overallScore } from "@/lib/team-service";
+import { useAccountScope } from "@/lib/account-scope";
 import type {
-  RecruiterProfile,
   RecruiterFavorite,
   AppNotification,
-  MyPlayer,
   MySession,
   MyPracticePlan,
-  MyTeamResponse,
 } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatTile } from "@/components/data-display/stat-tile";
@@ -35,34 +32,33 @@ type TrendPoint = { label: string; score: number };
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<RecruiterProfile | null>(null);
-  const [players, setPlayers] = useState<MyPlayer[]>([]);
+  // Team, players and the recruiter profile are already fetched once by
+  // AccountScopeProvider for the sidebar. Re-fetching them here would be three extra
+  // round trips for answers the page already has in context.
+  const { team, players, recruiterProfile: profile, status: scopeStatus } = useAccountScope();
   const [recent, setRecent] = useState<MySession[]>([]);
-  const [team, setTeam] = useState<MyTeamResponse | null>(null);
   const [plans, setPlans] = useState<MyPracticePlan[]>([]);
   const [favorites, setFavorites] = useState<RecruiterFavorite[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [trend, setTrend] = useState<TrendPoint[]>([]);
   const [trendName, setTrendName] = useState<string | null>(null);
 
+  // 🔑 Waits for the account scope. `players` arrives from context a tick after mount,
+  // and the score trend below is derived from the most-active player — running this on
+  // the empty first render would settle with no trend and never rebuild it.
   useEffect(() => {
+    if (scopeStatus === "loading") return;
     let active = true;
     (async () => {
-      const [prof, plys, sess, tm, pls, favs, notes] = await Promise.allSettled([
-        getRecruiterProfile(),
-        getMyPlayers(),
+      const [sess, pls, favs, notes] = await Promise.allSettled([
         getMySessions({ limit: 6 }),
-        getMyTeam(),
         getMyPracticePlans(),
         getFavorites(),
         getNotifications(),
       ]);
       if (!active) return;
-      if (prof.status === "fulfilled") setProfile(prof.value);
-      const playerList = plys.status === "fulfilled" ? plys.value : [];
-      setPlayers(playerList);
+      const playerList = players;
       if (sess.status === "fulfilled") setRecent(sess.value.sessions);
-      if (tm.status === "fulfilled") setTeam(tm.value);
       if (pls.status === "fulfilled") setPlans(pls.value);
       if (favs.status === "fulfilled") setFavorites(favs.value);
       if (notes.status === "fulfilled") setNotifications(notes.value);
@@ -91,7 +87,7 @@ export default function DashboardPage() {
       if (active) setLoading(false);
     })();
     return () => { active = false; };
-  }, []);
+  }, [scopeStatus, players]);
 
   const orgLine = [profile?.college || profile?.organization, profile?.division, profile?.conference]
     .filter(Boolean)

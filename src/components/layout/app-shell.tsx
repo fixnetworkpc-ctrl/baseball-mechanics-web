@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { recruiterSignOut } from "@/lib/recruiter-service";
+import { AccountScopeProvider } from "@/lib/account-scope";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
@@ -74,6 +75,7 @@ export function AppShell({
   }, [drawerOpen, closeDrawer]);
 
   return (
+    <AccountScopeProvider>
     <div className="flex min-h-screen flex-1">
       <a
         href="#main-content"
@@ -119,5 +121,6 @@ export function AppShell({
         </main>
       </div>
     </div>
+    </AccountScopeProvider>
   );
 }

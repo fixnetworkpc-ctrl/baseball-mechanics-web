@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_GROUPS } from "./nav-config";
+import { NAV_GROUPS, isGroupVisible, portalLabel } from "./nav-config";
+import { useAccountScope } from "@/lib/account-scope";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,13 @@ export function Sidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const scope = useAccountScope();
+
+  // While the account's scope is still resolving, reserve the space the conditional
+  // groups will occupy rather than popping them in under the cursor. Showing them
+  // early and then removing them would move a link out from under a click.
+  const resolving = scope.status === "loading";
+  const groups = NAV_GROUPS.filter((g) => !g.requires || isGroupVisible(g, scope));
 
   return (
     <div className="flex h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
@@ -32,13 +40,13 @@ export function Sidebar({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Baseball Mechanics
           </p>
-          <p className="text-sm font-bold text-sidebar-foreground">Recruiter Portal</p>
+          <p className="text-sm font-bold text-sidebar-foreground">{portalLabel(scope)}</p>
         </div>
       </div>
 
       {/* Nav */}
       <nav aria-label="Primary" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
-        {NAV_GROUPS.map((group, gi) => (
+        {groups.map((group, gi) => (
           <div key={gi} className="space-y-1">
             {group.heading && (
               <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -72,6 +80,14 @@ export function Sidebar({
             })}
           </div>
         ))}
+
+        {resolving && (
+          <div className="space-y-1 px-3 pt-1" aria-hidden>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-8 animate-pulse rounded-lg bg-sidebar-accent/40" />
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* Footer */}

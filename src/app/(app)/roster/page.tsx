@@ -54,7 +54,15 @@ export default function RosterPage() {
           {players.map((p, i) => {
             const score = overallScore(p.latest.mechanicsScore);
             const latest = p.latest.date ? new Date(p.latest.date).toLocaleDateString() : null;
+            // Profile fields come from the app, denormalized onto the session row, so an
+            // edit there shows up here on the next sync. Age leads because it is what a
+            // score means nothing without. 🔴 Never a birth date — the app sends an integer.
+            const prof = p.profile;
+            const position = [prof?.position, prof?.secondaryPosition].filter(Boolean).join("/");
             const meta = [
+              prof?.age != null && `age ${prof.age}`,
+              position || null,
+              prof?.jerseyNumber ? `#${prof.jerseyNumber}` : null,
               `${p.sessionCount} ${p.sessionCount === 1 ? "session" : "sessions"}`,
               latest && `latest ${latest}`,
               p.modes.join(", "),

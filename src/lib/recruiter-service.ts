@@ -43,6 +43,53 @@ export async function recruiterSignOut() {
   await supabase.auth.signOut();
 }
 
+// ── Email code sign-in (the SAME flow the mobile app uses) ───────────────────
+//
+// 🔴🔴 THE BUG THIS EXISTS TO FIX: the portal shipped with signInWithPassword as its
+// only way in, while the mobile app creates every account with OTP. An OTP account has
+// NO PASSWORD, so an app user — a parent, a coach, the owner — could reach the portal
+// and simply could not get in. The only escape was "Forgot password?", which nobody
+// thinks to click on an account they just made. Password sign-in is KEPT for the
+// recruiters who already set one; this is the path everyone arriving from the app needs.
+//
+// 🔑 Same Supabase project, same auth.users table, same OTP settings as the app — this
+// is emphatically NOT a second account system. It calls exactly what
+// OnboardingScreen.js calls: signInWithOtp then verifyOtp with type "email".
+//
+// ⚠️ Do NOT assume the code is 6 digits. Supabase's email OTP length is a project
+// setting (6-10) and this project is on 8 — the same warning the recovery flow below
+// carries, and the same silent failure if a maxLength or validator hardcodes a length.
+//
+// 🔴 REQUIRES the Supabase "Magic Link" email template to contain {{ .Token }}. That
+// template is already on {{ .Token }} for the mobile app, so this inherits it — but if
+// it is ever reverted to {{ .ConfirmationURL }}, users receive a link and no code to
+// type, on BOTH platforms at once.
+
+// `shouldCreateUser: true` matches the app exactly, so the two platforms cannot diverge
+// on what an email means. It also keeps this box from becoming an account-existence
+// oracle — the same reason requestPasswordReset below refuses to report unknown emails.
+// ⚠ It does mean the portal can mint an account, which does NOT pass through the app's
+// COPPA age gate. That gap is pre-existing (the password sign-up path below has always
+// done the same) and this does not widen it — but it is the reason to age-gate web
+// account creation if the portal is ever advertised to families directly.
+export async function sendEmailSignInCode(email: string) {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true },
+  });
+  if (error) throw error;
+}
+
+// Verifying the code IS the sign-in — it establishes the session directly, with no
+// password involved at any point.
+export async function verifyEmailSignInCode(email: string, token: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+  if (error) throw error;
+  return data;
+}
+
 // ── Password recovery ─────────────────────────────────────────────────────────
 //
 // CODE-based, not link-based, and that choice is load-bearing. A link flow needs

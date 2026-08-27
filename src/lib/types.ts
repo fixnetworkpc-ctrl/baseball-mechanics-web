@@ -206,11 +206,24 @@ export interface OrgAnalytics {
 // (non-anon) auth token and are scoped server-side to the caller's own user_id.
 
 // GET /my-players → { players }
+// The profile the mobile app denormalizes onto every session row (migration 030), so
+// an edit made in the app reaches the portal without a new analysis.
+// 🔴 There is deliberately no birthDate here and there must never be one — the app sends a
+// derived integer age instead, because the DOB belongs to a minor and stays on the device.
+export interface PlayerProfile {
+  age?: number;
+  jerseyNumber?: string;
+  position?: string;
+  secondaryPosition?: string;
+  teamName?: string;
+}
+
 export interface MyPlayer {
   playerName: string | null;
   playerId: string | null;
   sessionCount: number;
   modes: string[];
+  profile?: PlayerProfile | null;
   latest: {
     date: string | null;
     mode: string | null;
