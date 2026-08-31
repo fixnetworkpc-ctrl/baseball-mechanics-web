@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Wordmark } from "@/components/layout/wordmark";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -217,15 +218,12 @@ export default function LoginPage() {
               "radial-gradient(60% 50% at 15% 0%, rgba(43,128,255,0.16), transparent 70%), radial-gradient(55% 45% at 100% 100%, rgba(194,16,38,0.18), transparent 70%)",
           }}
         />
-        <div className="relative flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground shadow-lg">
-            BM
-          </div>
-          <div className="leading-tight">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Baseball Mechanics</p>
-            <p className="text-sm font-bold">Recruiter Portal</p>
-          </div>
-        </div>
+        <Wordmark
+          label="Baseball Mechanics · Recruiter Portal"
+          onDark
+          badgeClassName="size-10 shadow-lg"
+          className="relative"
+        />
 
         <div className="relative space-y-6">
           <h1 className="max-w-md text-4xl font-extrabold leading-tight tracking-tight">
@@ -254,7 +252,12 @@ export default function LoginPage() {
             It was never true — one Supabase project, one auth.users table — and it actively
             told an app user that the portal was not for them, on the very page where they
             were trying to sign in with their app account. */}
-        <p className="relative text-xs text-white/40">Sign in with the same account you use in the Baseball Mechanics app.</p>
+        {/* 🔴 "a MechanicsIQ online service" is the Class 42 hook in the USPTO filing — it is
+            what states, on the page that offers the service, that the SaaS is rendered under
+            the mark. Reword it freely, but keep the mark tied to the service. */}
+        <p className="relative text-xs text-white/40">
+          The Recruiter Portal is a MechanicsIQ online service. Sign in with the same account you use in the Baseball Mechanics app.
+        </p>
       </div>
 
       {/* Auth form */}
@@ -264,7 +267,10 @@ export default function LoginPage() {
             <div className="mx-auto mb-2 flex size-11 items-center justify-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground">
               BM
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Baseball Mechanics</h1>
+            <h1 className="text-2xl font-bold tracking-tight">MechanicsIQ</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Baseball Mechanics · Recruiter Portal
+            </p>
           </div>
 
           <Card>

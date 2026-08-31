@@ -18,8 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Baseball Mechanics — Recruiter Portal",
-  description: "Scouting intelligence and recruiting tools for Baseball Mechanics.",
+  title: "MechanicsIQ — Baseball Mechanics Recruiter Portal",
+  description:
+    "MechanicsIQ online platform: AI-graded mechanics, recruiting-ready reports and prospect discovery for coaches and college recruiters.",
 };
 
 export default function RootLayout({

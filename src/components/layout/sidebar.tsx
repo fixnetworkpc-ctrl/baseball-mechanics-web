@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_GROUPS, isGroupVisible, portalLabel } from "./nav-config";
+import { Wordmark } from "./wordmark";
 import { useAccountScope } from "@/lib/account-scope";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,17 +33,7 @@ export function Sidebar({
   return (
     <div className="flex h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground shadow-md">
-          BM
-        </div>
-        <div className="leading-tight">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Baseball Mechanics
-          </p>
-          <p className="text-sm font-bold text-sidebar-foreground">{portalLabel(scope)}</p>
-        </div>
-      </div>
+      <Wordmark label={portalLabel(scope)} className="px-5 py-5" />
 
       {/* Nav */}
       <nav aria-label="Primary" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
