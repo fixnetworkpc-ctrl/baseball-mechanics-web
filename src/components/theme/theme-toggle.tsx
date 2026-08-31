@@ -19,7 +19,18 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      // 🔴 MUST be gated on `mounted`, exactly like the icon below. `resolvedTheme` is
+      // undefined on the server, so an ungated label renders "Switch to dark theme" during
+      // SSR and "Switch to light theme" after the client resolves the real theme — a
+      // hydration mismatch React reports against <Button> in button.tsx, which sends you
+      // hunting in the wrong file. The guard was previously applied to the icon only.
+      aria-label={
+        mounted
+          ? isDark
+            ? "Switch to light theme"
+            : "Switch to dark theme"
+          : "Toggle theme"
+      }
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {/* Render a stable icon until mounted to avoid hydration mismatch */}
