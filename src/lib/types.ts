@@ -304,6 +304,23 @@ export interface MyTeamResponse {
   membership: TeamMembership | null;
 }
 
+// GET /my-teams → every team the account belongs to. Each payload is that team's OWN
+// record, so its roster and leaderboards never include another team's players.
+export interface TeamRosterEntry {
+  name: string;
+  firstName: string;
+  pmi: number | null;
+  hmi: number | null;
+  cmi: number | null;
+}
+export interface TeamWithRoster extends TeamPayload {
+  roster?: TeamRosterEntry[];
+}
+export interface MyTeamsResponse {
+  teams: TeamWithRoster[];
+  activeTeamId: string | null;
+}
+
 // GET /admin/metrics. Shape is produced by the admin_metrics() Postgres function
 // (migration 013), with free_cap merged in from Redis by the server.
 //

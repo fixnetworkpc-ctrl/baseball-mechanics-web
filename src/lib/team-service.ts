@@ -10,6 +10,7 @@ import type {
   MySessionsResponse,
   MyPracticePlan,
   MyTeamResponse,
+  MyTeamsResponse,
 } from '@/lib/types';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
@@ -49,6 +50,19 @@ export const getMyPracticePlans = () =>
   get<{ plans: MyPracticePlan[] }>('/my-practice-plans').then((r) => r.plans);
 
 export const getMyTeam = () => get<MyTeamResponse>('/my-team');
+
+// Every team, for the team picker. Falls back to the single /my-team answer while a server
+// without /my-teams is still live, so the web can deploy first without losing the page.
+export async function getMyTeams(): Promise<MyTeamsResponse> {
+  const res = await fetch(`${BACKEND_URL}/my-teams`, { headers: await authHeader() });
+  if (res.status === 404) {
+    const one = await getMyTeam();
+    return { teams: one.team ? [one.team] : [], activeTeamId: one.team?.teamId ?? null };
+  }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
 
 // mechanics_score is stored as a versioned object; pull an overall number
 // defensively for display without importing the mobile scoring engines.

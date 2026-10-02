@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { getRecruiterProfile } from "@/lib/recruiter-service";
-import { getMyPlayers, getMyTeam } from "@/lib/team-service";
+import { getMyPlayers, getMyTeam, getMyTeams } from "@/lib/team-service";
 import type { MyPlayer, MyTeamResponse, RecruiterProfile } from "@/lib/types";
 
 /**
@@ -52,10 +52,13 @@ export function AccountScopeProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     let active = true;
     (async () => {
-      const [tm, plys, prof] = await Promise.allSettled([
+      const [tm, plys, prof, tms] = await Promise.allSettled([
         getMyTeam(),
         getMyPlayers(),
         getRecruiterProfile(),
+        // Every team, not just the active one: an account whose active team is gone but
+        // which is still on another team must keep its Team link.
+        getMyTeams(),
       ]);
       if (!active) return;
 
@@ -76,7 +79,7 @@ export function AccountScopeProvider({ children }: { children: React.ReactNode }
         team,
         players,
         recruiterProfile,
-        hasTeam: failed || !!team?.team,
+        hasTeam: failed || !!team?.team || (tms.status === "fulfilled" && tms.value.teams.length > 0),
         hasPlayers: failed || players.length > 0,
         hasRecruiterProfile: failed || !!recruiterProfile,
       });
