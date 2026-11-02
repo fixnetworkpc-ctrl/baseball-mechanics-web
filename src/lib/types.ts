@@ -198,6 +198,9 @@ export interface OrgAnalytics {
   improvementRate: number | null;
   recruitingExposure: number | null;
   members: { userId: string; role: string; playerName: string | null }[];
+  // false when the caller is not the org's owner or a coach: `members` is then empty because
+  // it is withheld, not because the org has nobody in it. Absent from older servers.
+  membersVisible?: boolean;
 }
 
 // ── Phase 2: personal team/roster/results/practice data ──────────────────────

@@ -61,7 +61,16 @@ export default function OrgDetailPage() {
 
       <section className="space-y-3">
         <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Roster</h2>
-        {!analytics?.members?.length ? (
+        {analytics?.membersVisible === false ? (
+          <Card className="border-dashed">
+            <CardContent className="py-10 text-center">
+              <p className="font-medium">Roster is visible to owners and coaches</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                The totals above cover everyone in this organization.
+              </p>
+            </CardContent>
+          </Card>
+        ) : !analytics?.members?.length ? (
           <Card className="border-dashed">
             <CardContent className="py-10 text-center">
               <p className="font-medium">No members yet</p>
