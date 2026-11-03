@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_GROUPS, isGroupVisible, portalLabel } from "./nav-config";
+import { visibleNav, portalLabel } from "./nav-config";
 import { Wordmark } from "./wordmark";
 import { useAccountScope } from "@/lib/account-scope";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export function Sidebar({
   // groups will occupy rather than popping them in under the cursor. Showing them
   // early and then removing them would move a link out from under a click.
   const resolving = scope.status === "loading";
-  const groups = NAV_GROUPS.filter((g) => !g.requires || isGroupVisible(g, scope));
+  const groups = visibleNav(scope);
 
   return (
     <div className="flex h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">

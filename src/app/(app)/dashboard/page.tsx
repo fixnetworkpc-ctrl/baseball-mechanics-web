@@ -16,6 +16,7 @@ import type {
   MyPracticePlan,
 } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
+import { TeamOverview } from "@/components/team/team-overview";
 import { StatTile } from "@/components/data-display/stat-tile";
 import { ScoreCard } from "@/components/data-display/score-card";
 import { PlayerCard } from "@/components/data-display/player-card";
@@ -35,7 +36,7 @@ export default function DashboardPage() {
   // Team, players and the recruiter profile are already fetched once by
   // AccountScopeProvider for the sidebar. Re-fetching them here would be three extra
   // round trips for answers the page already has in context.
-  const { team, players, recruiterProfile: profile, status: scopeStatus } = useAccountScope();
+  const { players, recruiterProfile: profile, status: scopeStatus } = useAccountScope();
   const [recent, setRecent] = useState<MySession[]>([]);
   const [plans, setPlans] = useState<MyPracticePlan[]>([]);
   const [favorites, setFavorites] = useState<RecruiterFavorite[]>([]);
@@ -132,6 +133,10 @@ export default function DashboardPage() {
         <StatTile label="Unread" value={unread} accent="var(--chart-4)" hint="notifications" />
       </div>
 
+      {/* Team averages + leaderboards — formerly the separate "Team Dashboard" page.
+          Renders nothing for an account with no team. */}
+      <TeamOverview />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
@@ -207,28 +212,6 @@ export default function DashboardPage() {
               />
             </section>
           )}
-
-          {/* Team snapshot */}
-          <section className="space-y-3">
-            <SectionTitle title="Team" href={team?.membership ? "/team" : undefined} />
-            {team?.team ? (
-              <Card>
-                <CardContent className="space-y-3 pt-6">
-                  <p className="font-semibold">{team.team.teamName}</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    {[["PMI", team.team.avgPMI], ["HMI", team.team.avgHMI], ["CMI", team.team.avgCMI]].map(([k, v]) => (
-                      <div key={k as string} className="rounded-lg bg-secondary py-2">
-                        <p className="text-lg font-extrabold tabular-nums">{(v as number) ?? "—"}</p>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{k as string}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <EmptyState icon={Users} title="No team" body="Join or create a team in the app to track it here." />
-            )}
-          </section>
 
           {/* AI Recruit action (no fabricated insights) */}
           <Link href="/ai-recruit" className="block">
