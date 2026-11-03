@@ -9,6 +9,7 @@ import { StatTile } from "@/components/data-display/stat-tile";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { CategoryBar } from "@/components/charts/category-bar";
+import { RosterCard } from "@/components/data-display/roster-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -128,23 +129,21 @@ export default function TeamPage() {
 function Roster({ team }: { team: TeamWithRoster }) {
   const roster = team.roster ?? [];
   if (roster.length === 0) return null;
-  const cell = (v: number | null) => (v == null ? "—" : v);
+  // Collectible-style cards, one per player, mirroring the app's roster cards. Each <li>
+  // holds a single block child so the grid tracks are the cards, not their inner text.
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <h2 className="mb-3 text-sm font-semibold">Roster</h2>
-        <ul className="divide-y divide-border">
-          {roster.map((m) => (
-            <li key={m.name} className="flex items-center justify-between gap-3 py-2 text-sm">
-              <span className="min-w-0 truncate font-medium">{m.name}</span>
-              <span className="shrink-0 tabular-nums text-muted-foreground">
-                PMI {cell(m.pmi)} · HMI {cell(m.hmi)} · CMI {cell(m.cmi)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+    <section aria-labelledby="roster-heading">
+      <h2 id="roster-heading" className="mb-3 text-sm font-semibold">
+        Roster <span className="font-normal text-muted-foreground">· {roster.length}</span>
+      </h2>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {roster.map((m) => (
+          <li key={m.name}>
+            <RosterCard player={m} teamName={team.teamName} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
