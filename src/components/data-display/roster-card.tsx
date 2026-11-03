@@ -33,13 +33,16 @@ export function RosterCard({
   player,
   teamName,
   subline,
+  jersey,
   selected = false,
   onSelect,
 }: {
   player: RosterCardPlayer;
   teamName?: string | null;
-  /** Small line under the tier plate, e.g. "SS · #7". */
+  /** Small line under the tier plate, e.g. "SS". */
   subline?: string | null;
+  /** Jersey number, shown under the initials. */
+  jersey?: string | null;
   selected?: boolean;
   /** When given, the whole card is a button (opens the player's details). */
   onSelect?: () => void;
@@ -57,6 +60,7 @@ export function RosterCard({
     player.name,
     best ? `${best.label.toLowerCase()}, ${tier.label} tier` : "no scores yet",
     subline,
+    jersey ? `number ${jersey}` : null,
     ...DISCIPLINES.map((d) => `${d.short} ${player[d.key] ?? "none"}`),
   ].filter(Boolean).join(", ");
 
@@ -84,7 +88,9 @@ export function RosterCard({
           {player.name}
         </p>
 
-        {/* Photo window → discipline hologram, initials on a badge. */}
+        {/* Photo window → big gold initials (+ jersey #), the discipline hologram faded far
+            back like the app's hologram layer. User found the full-strength figure crude at
+            card size (2026-11-03). */}
         <div
           aria-hidden
           className="relative w-full overflow-hidden rounded-md"
@@ -99,15 +105,32 @@ export function RosterCard({
             mode={best?.mode ?? "batting"}
             electric={electric}
             glow={glow}
-            opacity={best ? 1 : 0.35}
+            opacity={best ? 0.16 : 0.08}
             className="absolute inset-0 m-auto h-[92%] w-[92%]"
           />
-          <span
-            className="absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[11px] font-black tracking-wide"
-            style={{ background: `${CARD_INK.bg}CC`, border: `1px solid ${GOLD.mid}`, color: GOLD.hi }}
-          >
-            {initials(player.name)}
-          </span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              className="font-black leading-none tracking-tight"
+              style={{
+                fontSize: "clamp(2.75rem, 9vw, 4.75rem)",
+                backgroundImage: `linear-gradient(180deg, ${GOLD.hi} 0%, ${GOLD.base} 42%, ${GOLD.lo} 58%, ${GOLD.base} 78%, ${GOLD.mid} 100%)`,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                filter: `drop-shadow(0 0 10px ${glow}55) drop-shadow(0 2px 0 #000A)`,
+              }}
+            >
+              {initials(player.name)}
+            </span>
+            {jersey && (
+              <span
+                className="mt-1 text-lg font-extrabold tabular-nums tracking-wider sm:text-xl"
+                style={{ color: electric, textShadow: `0 0 10px ${glow}` }}
+              >
+                #{jersey}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Discipline + tier plate. */}

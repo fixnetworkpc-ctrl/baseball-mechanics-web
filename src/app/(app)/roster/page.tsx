@@ -68,8 +68,12 @@ function mergeRoster(players: MyPlayer[], teams: TeamWithRoster[]): Entry[] {
 
 function subline(e: Entry) {
   const prof = e.own?.profile;
-  const pos = [prof?.position, prof?.secondaryPosition].filter(Boolean).join("/");
-  return [pos || null, prof?.jerseyNumber ? `#${prof.jerseyNumber}` : null].filter(Boolean).join(" · ") || null;
+  return [prof?.position, prof?.secondaryPosition].filter(Boolean).join("/") || null;
+}
+
+function jersey(e: Entry) {
+  const j = e.own?.profile?.jerseyNumber;
+  return j != null && String(j).trim() ? String(j).trim() : null;
 }
 
 export default function PlayersPage() {
@@ -168,6 +172,7 @@ function PlayersInner() {
                   player={e}
                   teamName={filterTeam ? filterTeam.teamName : e.teamNames[0] ?? null}
                   subline={subline(e)}
+                  jersey={jersey(e)}
                   selected={current?.key === e.key}
                   onSelect={() => setSelected(current?.key === e.key ? null : e.key)}
                 />

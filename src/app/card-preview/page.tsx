@@ -26,9 +26,9 @@ export default function CardPreviewPage() {
       <h1 className="text-lg font-semibold">Roster card preview (local only)</h1>
       <p className="text-sm text-muted-foreground">Sample players, one per tier. This page 404s on the live site.</p>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {SAMPLE.map((p) => (
+        {SAMPLE.map((p, i) => (
           <li key={p.name}>
-            <RosterCard player={p} teamName="Sample Team 12U" />
+            <RosterCard player={p} teamName="Sample Team 12U" jersey={i % 2 ? String(7 + i) : null} subline={i % 3 ? "SS" : null} />
           </li>
         ))}
       </ul>

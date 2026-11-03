@@ -35,6 +35,9 @@ export function CategoryBar({
         <CartesianGrid horizontal={false} stroke={c.grid} strokeOpacity={0.4} />
         <XAxis type="number" domain={domain} stroke={c.axis} tickLine={false} axisLine={false} fontSize={11} />
         <YAxis
+          // interval 0 = label EVERY bar. Recharts otherwise drops alternate labels when it
+          // decides they are crowded, which left every other player on a leaderboard unnamed.
+          interval={0}
           type="category"
           dataKey="label"
           stroke={c.axis}
