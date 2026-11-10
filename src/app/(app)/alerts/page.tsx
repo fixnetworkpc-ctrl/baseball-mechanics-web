@@ -34,8 +34,8 @@ const ALERT_TYPES = [
   { type: "BALANCE",         label: "Balance Score",          hasThreshold: true,  placeholder: "85", description: "Triggers when balance & stability category exceeds threshold." },
   { type: "VELOCITY_GAIN",   label: "Pitch Velocity Gain",    hasThreshold: true,  placeholder: "3",  description: "Triggers when pitching improvement rate ≥ threshold pts/session." },
   { type: "HIGH_PROJECTION", label: "High Projection",        hasThreshold: false, description: "Triggers when a player reaches Elite or High upside tier." },
-  { type: "BREAKOUT",        label: "BREAKOUT Status",        hasThreshold: false, description: "Triggers when a rising athlete accelerates ≥ 5 pts/session." },
-  { type: "RISING",          label: "RISING Status",          hasThreshold: false, description: "Triggers when any player qualifies as a Rising Athlete." },
+  { type: "BREAKOUT",        label: "BREAKOUT Status",        hasThreshold: false, description: "Triggers when a player improves ≥ 3 pts/session over 3+ sessions, or ≥ 2 pts/session and speeding up over 4+ sessions, in any discipline — the same rule as the app's BREAKOUT badge." },
+  { type: "RISING",          label: "RISING Status",          hasThreshold: false, description: "Triggers when a player improves ≥ 1.5 pts/session in any discipline — the same rule as the app's RISING badge." },
   { type: "WINDOW_OPENING",  label: "Window Opening",         hasThreshold: false, description: "Triggers when a player crosses the D1-evaluable threshold with momentum." },
 ] as const;
 
